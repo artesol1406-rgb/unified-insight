@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { generateText, Output } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 import { VECTOR_PROMPT, ISO_PROMPT, CHAT_SYSTEM } from "./prompts";
 
@@ -18,6 +18,17 @@ function toVec(r: RawVec): Record<string, number> {
     'Ξ': r.Xi, 'T': r.T, 'R': r.R, 'E': r.E, 'M': r.M, 'V': r.V,
     'S': r.S, 'A': r.A, 'F': r.F, 'φe': r.phi_e, 'φc': r.phi_c,
   };
+}
+
+function extractJson(text: string): unknown {
+  // strip code fences
+  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  const raw = fenced ? fenced[1] : text;
+  // find the first { ... last }
+  const start = raw.indexOf("{");
+  const end = raw.lastIndexOf("}");
+  if (start === -1 || end === -1) throw new Error("No JSON in response.");
+  return JSON.parse(raw.slice(start, end + 1));
 }
 
 async function getGateway() {
@@ -41,12 +52,13 @@ export const analyzeConcept = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const gateway = await getGateway();
-      const { experimental_output } = await generateText({
+      const { text } = await generateText({
         model: gateway(MODEL),
-        prompt: VECTOR_PROMPT(data.concept, data.domain),
-        experimental_output: Output.object({ schema: VecSchema }),
+        prompt: VECTOR_PROMPT(data.concept, data.domain) +
+          `\n\nRespond ONLY with valid JSON in this exact shape, no prose, no code fences:\n{"Xi":0.0,"T":0.0,"R":0.0,"E":0.0,"M":0.0,"V":0.0,"S":0.0,"A":0.0,"F":0.0,"phi_e":0.0,"phi_c":0.0}`,
       });
-      return { vec: toVec(experimental_output) };
+      const parsed = VecSchema.parse(extractJson(text));
+      return { vec: toVec(parsed) };
     } catch (e) { gwError(e); }
   });
 
@@ -63,15 +75,16 @@ export const compareConcepts = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     try {
       const gateway = await getGateway();
-      const { experimental_output } = await generateText({
+      const { text } = await generateText({
         model: gateway(MODEL),
-        prompt: ISO_PROMPT(data.a, data.b),
-        experimental_output: Output.object({ schema: IsoSchema }),
+        prompt: ISO_PROMPT(data.a, data.b) +
+          `\n\nRespond ONLY with valid JSON in this exact shape, no prose, no code fences:\n{"A":{"Xi":0.0,"T":0.0,"R":0.0,"E":0.0,"M":0.0,"V":0.0,"S":0.0,"A":0.0,"F":0.0,"phi_e":0.0,"phi_c":0.0},"B":{"Xi":0.0,"T":0.0,"R":0.0,"E":0.0,"M":0.0,"V":0.0,"S":0.0,"A":0.0,"F":0.0,"phi_e":0.0,"phi_c":0.0},"insight":"..."}`,
       });
+      const parsed = IsoSchema.parse(extractJson(text));
       return {
-        vA: toVec(experimental_output.A),
-        vB: toVec(experimental_output.B),
-        insight: experimental_output.insight,
+        vA: toVec(parsed.A),
+        vB: toVec(parsed.B),
+        insight: parsed.insight,
       };
     } catch (e) { gwError(e); }
   });

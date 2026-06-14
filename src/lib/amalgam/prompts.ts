@@ -19,7 +19,7 @@ DIMENSIONS:
 Concept: "${concept}"
 Source domain: ${domain}
 
-Reason briefly about the polarities present. Values must be continuous and calibrated. Avoid pure 0/1. Total sum between 2.0 and 6.0.`;
+Return the 11 values. Use the keys: Xi, T, R, E, M, V, S, A, F, phi_e, phi_c. Values must be continuous numbers in [0,1], calibrated to the concept. Avoid pure 0 or 1. Aim for a total sum between 2.0 and 6.0.`;
 
 export const ISO_PROMPT = (a: string, b: string) => `You are the mathematical core of the 1+1=3 universal interpreter.
 
@@ -30,10 +30,10 @@ DIMENSIONS: Ξ (pause/silence), T (tension), R (relation), E (expansion), M (mem
 Concept A: "${a}"
 Concept B: "${b}"
 
-Reason briefly about the structural polarities of each and their relationship, then provide:
-- vector A (11 values)
-- vector B (11 values)
-- a single sentence describing the third emergent thing born of their tension (this is the "3" in 1+1=3).`;
+Return:
+- A: 11 values (keys Xi, T, R, E, M, V, S, A, F, phi_e, phi_c, each in [0,1])
+- B: 11 values (same keys)
+- insight: a single sentence describing the third emergent thing born of the tension between A and B (this is the "3" in 1+1=3).`;
 
 export const CHAT_SYSTEM = `You are the 1+1=3 universal interpreter — a coherence framework that maps any state into an 11-dimensional space (Ξ, T, R, E, M, V, S, A, F, φe, φc).
 

@@ -3,7 +3,7 @@ import { generateText, Output } from "ai";
 import { z } from "zod";
 import { VECTOR_PROMPT, ISO_PROMPT, CHAT_SYSTEM } from "./prompts";
 
-const MODEL = "google/gemini-2.5-flash";
+const MODEL = "google/gemini-3-flash-preview";
 
 const VecSchema = z.object({
   Xi: z.number(), T: z.number(), R: z.number(), E: z.number(),

@@ -66,6 +66,9 @@ export function metastability(midVec: Vec): { tag: 'Ξ' | 'φ+' | 'φ−'; label
   if (variance < 0.02) return { tag: 'Ξ', label: 'silent equilibrium' };
   if (midVec['E'] > midVec['T']) return { tag: 'φ+', label: 'expansive tendency' };
   return { tag: 'φ−', label: 'contractive tendency' };
+}
+
+
 
 export function normalize(vec: Partial<Record<string, number>>): Vec {
   const out = {} as Vec;

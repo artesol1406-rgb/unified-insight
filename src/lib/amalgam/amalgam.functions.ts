@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
-import { VECTOR_PROMPT, ISO_PROMPT, CHAT_SYSTEM } from "./prompts";
+import { VECTOR_PROMPT, ISO_PROMPT, ISO_DEEP_PROMPT, CHAT_SYSTEM } from "./prompts";
 
 const MODEL = "google/gemini-3-flash-preview";
 

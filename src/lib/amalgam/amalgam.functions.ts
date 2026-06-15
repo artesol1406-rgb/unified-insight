@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
-import { VECTOR_PROMPT, ISO_PROMPT, CHAT_SYSTEM } from "./prompts";
+import { VECTOR_PROMPT, ISO_PROMPT, ISO_DEEP_PROMPT, CHAT_SYSTEM } from "./prompts";
 
 const MODEL = "google/gemini-3-flash-preview";
 
@@ -85,6 +85,73 @@ export const compareConcepts = createServerFn({ method: "POST" })
         vA: toVec(parsed.A),
         vB: toVec(parsed.B),
         insight: parsed.insight,
+      };
+    } catch (e) { gwError(e); }
+  });
+
+const PolesSchema = z.object({
+  activeSpace: z.string(),
+  receptiveSpace: z.string(),
+  activeTime: z.string(),
+  receptiveTime: z.string(),
+  dynamicSpace: z.string(),
+  staticSpace: z.string(),
+  dynamicTime: z.string(),
+  staticTime: z.string(),
+});
+
+const DeepSchema = z.object({
+  vA: VecSchema,
+  vB: VecSchema,
+  tensionsA: z.string(),
+  tensionsB: z.string(),
+  polesA: PolesSchema,
+  polesB: PolesSchema,
+  matrix: z.object({ spaceTension: z.string(), timeTension: z.string() }),
+  isomorphisms: z.object({
+    activeExtreme: z.string(),
+    receptiveExtreme: z.string(),
+    dynamicExtreme: z.string(),
+    staticExtreme: z.string(),
+  }),
+  polarityCore: z.string(),
+  analogues: z.array(z.object({ system: z.string(), mapping: z.string() })).min(1).max(6),
+  layers: z.object({ concrete: z.string(), human: z.string(), amalgam: z.string() }),
+  necessity: z.string(),
+  nextStep: z.string(),
+});
+
+export const deepCompare = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({
+      aClaimant: z.string().min(1).max(120),
+      aClaim: z.string().min(1).max(4000),
+      bClaimant: z.string().min(1).max(120),
+      bClaim: z.string().min(1).max(4000),
+    }).parse(input)
+  )
+  .handler(async ({ data }) => {
+    try {
+      const gateway = await getGateway();
+      const { text } = await generateText({
+        model: gateway(MODEL),
+        prompt: ISO_DEEP_PROMPT(data.aClaimant, data.aClaim, data.bClaimant, data.bClaim),
+      });
+      const parsed = DeepSchema.parse(extractJson(text));
+      return {
+        vA: toVec(parsed.vA),
+        vB: toVec(parsed.vB),
+        tensionsA: parsed.tensionsA,
+        tensionsB: parsed.tensionsB,
+        polesA: parsed.polesA,
+        polesB: parsed.polesB,
+        matrix: parsed.matrix,
+        isomorphisms: parsed.isomorphisms,
+        polarityCore: parsed.polarityCore,
+        analogues: parsed.analogues,
+        layers: parsed.layers,
+        necessity: parsed.necessity,
+        nextStep: parsed.nextStep,
       };
     } catch (e) { gwError(e); }
   });

@@ -100,13 +100,31 @@ const PolesSchema = z.object({
   staticTime: z.string(),
 });
 
+const SignsSchema = z.object({
+  Xi: z.number(), T: z.number(), R: z.number(), E: z.number(),
+  M: z.number(), V: z.number(), S: z.number(), A: z.number(),
+  F: z.number(), phi_e: z.number(), phi_c: z.number(),
+});
+
+function toSigns(r: z.infer<typeof SignsSchema>): Record<string, -1 | 0 | 1> {
+  const norm = (n: number): -1 | 0 | 1 => (n > 0 ? 1 : n < 0 ? -1 : 0);
+  return {
+    'Ξ': norm(r.Xi), 'T': norm(r.T), 'R': norm(r.R), 'E': norm(r.E),
+    'M': norm(r.M), 'V': norm(r.V), 'S': norm(r.S), 'A': norm(r.A),
+    'F': norm(r.F), 'φe': norm(r.phi_e), 'φc': norm(r.phi_c),
+  };
+}
+
 const DeepSchema = z.object({
   vA: VecSchema,
   vB: VecSchema,
+  signsA: SignsSchema,
+  signsB: SignsSchema,
   tensionsA: z.string(),
   tensionsB: z.string(),
   polesA: PolesSchema,
   polesB: PolesSchema,
+  polarityPairs: z.array(z.object({ labelA: z.string(), labelB: z.string(), dim: z.string() })).min(1).max(8),
   matrix: z.object({ spaceTension: z.string(), timeTension: z.string() }),
   isomorphisms: z.object({
     activeExtreme: z.string(),
@@ -117,8 +135,9 @@ const DeepSchema = z.object({
   polarityCore: z.string(),
   analogues: z.array(z.object({ system: z.string(), mapping: z.string() })).min(1).max(6),
   layers: z.object({ concrete: z.string(), human: z.string(), amalgam: z.string() }),
+  bridge: z.string(),
   necessity: z.string(),
-  nextStep: z.string(),
+  caminoAmor: z.string(),
 });
 
 export const deepCompare = createServerFn({ method: "POST" })
@@ -141,17 +160,21 @@ export const deepCompare = createServerFn({ method: "POST" })
       return {
         vA: toVec(parsed.vA),
         vB: toVec(parsed.vB),
+        signsA: toSigns(parsed.signsA),
+        signsB: toSigns(parsed.signsB),
         tensionsA: parsed.tensionsA,
         tensionsB: parsed.tensionsB,
         polesA: parsed.polesA,
         polesB: parsed.polesB,
+        polarityPairs: parsed.polarityPairs,
         matrix: parsed.matrix,
         isomorphisms: parsed.isomorphisms,
         polarityCore: parsed.polarityCore,
         analogues: parsed.analogues,
         layers: parsed.layers,
+        bridge: parsed.bridge,
         necessity: parsed.necessity,
-        nextStep: parsed.nextStep,
+        caminoAmor: parsed.caminoAmor,
       };
     } catch (e) { gwError(e); }
   });

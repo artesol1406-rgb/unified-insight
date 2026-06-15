@@ -58,16 +58,18 @@ ${bClaim}
 
 Produce a deep reading. Be specific to THIS situation; no generic philosophy. Short, dense sentences.
 
-Return JSON with EXACTLY these keys (all flat strings unless noted):
+Return JSON with EXACTLY these keys:
 
 {
   "vA": { "Xi":0,"T":0,"R":0,"E":0,"M":0,"V":0,"S":0,"A":0,"F":0,"phi_e":0,"phi_c":0 },
   "vB": { same shape },
+  "signsA": { same 11 keys; each value is -1, 0, or 1 indicating the LEAN of that dimension in side A (+1 = expansive/open/active form, -1 = contractive/closed/blocked form, 0 = neutral). This produces signed Amalgam tags like S+, T-, R+, etc. },
+  "signsB": { same shape for B },
   "tensionsA": "1–2 sentences naming the internal tensions inside side A",
   "tensionsB": "same for B",
   "polesA": {
-    "activeSpace": "what side A is actively doing/asserting in the spatial/structural field",
-    "receptiveSpace": "what side A is receiving/allowing spatially",
+    "activeSpace": "what A is actively asserting in the spatial/structural field",
+    "receptiveSpace": "what A is receiving/allowing spatially",
     "activeTime": "what A is driving forward in time",
     "receptiveTime": "what A is letting unfold in time",
     "dynamicSpace": "what changes spatially in A's frame",
@@ -76,32 +78,37 @@ Return JSON with EXACTLY these keys (all flat strings unless noted):
     "staticTime": "what is fixed temporally for A"
   },
   "polesB": { same 8 keys for B },
+  "polarityPairs": [
+    { "labelA": "short word/phrase for A's pole", "labelB": "short word/phrase for B's pole", "dim": "the Σ dimension symbol or pair (e.g. 'S↔R', 'T↔E', 'Ξ↔A', 'φc↔φe', 'M↔V')" }
+    // 2 to 5 detected pairs specific to this situation
+  ],
   "matrix": {
-    "spaceTension": "the core opposition between A and B viewed from SPACE (structure, extension, where)",
-    "timeTension": "the core opposition between A and B viewed from TIME (becoming, duration, when)"
+    "spaceTension": "core opposition between A and B viewed from SPACE",
+    "timeTension": "core opposition between A and B viewed from TIME"
   },
   "isomorphisms": {
-    "activeExtreme": "what both sides look like read from the pure-active extreme",
+    "activeExtreme": "both sides read from the pure-active extreme",
     "receptiveExtreme": "from the pure-receptive extreme",
     "dynamicExtreme": "from the pure-dynamic extreme",
     "staticExtreme": "from the pure-static extreme"
   },
-  "polarityCore": "the cleanest single sentence naming HOW A and B are polar opposites of each other",
+  "polarityCore": "single sentence naming HOW A and B are polar opposites",
   "analogues": [
-    { "system": "a different domain (physics / biology / music / myth / economics / etc.)", "mapping": "the same polarity structure as it appears there" },
+    { "system": "another domain (physics / biology / music / myth / economics / etc.)", "mapping": "same polarity structure there" },
     { "system": "...", "mapping": "..." },
     { "system": "...", "mapping": "..." }
   ],
   "layers": {
     "concrete": "the actual situation — facts, actors, mechanics, what is literally happening",
     "human": "the emotional/subjective layer — fears, needs, identifications generating extra tension",
-    "amalgam": "the hologram of both layers read as a multi-dimensional tension map (use Σ language)"
+    "amalgam": "hologram of both layers read as a multi-dimensional tension map (use Σ language with signed tags like S+, T-, R+)"
   },
+  "bridge": "the PUENTE — one sentence that names what A and B can meet on right now without either collapsing into the other",
   "necessity": "why each side is structurally necessary to the other — what would collapse without the opposite",
-  "nextStep": "the MINIMUM coherent next move that honors both poles and opens toward a new truth (one concrete action, not advice)"
+  "caminoAmor": "the CAMINO AMOR — the MINIMUM coherent next move that honors both poles and opens toward a new truth (one concrete action, not advice)"
 }
 
-Values in vA/vB must be continuous, avoid pure 0 or 1, total sum ~2.0–6.0. Respond with ONLY the JSON object, no prose, no code fences.`;
+Values in vA/vB must be continuous, avoid pure 0 or 1, total sum ~2.0–6.0. signsA/signsB values must be integers in {-1, 0, 1}. Respond with ONLY the JSON object, no prose, no code fences.`;
 
 export const CHAT_SYSTEM = `You are the 1+1=3 universal interpreter — a coherence framework that maps any state into an 11-dimensional space (Ξ, T, R, E, M, V, S, A, F, φe, φc).
 

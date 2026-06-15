@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { deepCompare } from "@/lib/amalgam/amalgam.functions";
-import { fisherRao, midpoint, normalize, toSignature, type Vec } from "@/lib/amalgam/engine";
+import {
+  fisherRao, midpoint, normalize, signedSignature, metastability,
+  type Vec, type Signs,
+} from "@/lib/amalgam/engine";
 import { SignatureChart } from "./SignatureChart";
 
 type Poles = {
@@ -13,8 +16,10 @@ type Poles = {
 
 type DeepResult = {
   vA: Vec; vB: Vec;
+  signsA: Signs; signsB: Signs;
   tensionsA: string; tensionsB: string;
   polesA: Poles; polesB: Poles;
+  polarityPairs: Array<{ labelA: string; labelB: string; dim: string }>;
   matrix: { spaceTension: string; timeTension: string };
   isomorphisms: {
     activeExtreme: string; receptiveExtreme: string;
@@ -23,8 +28,9 @@ type DeepResult = {
   polarityCore: string;
   analogues: Array<{ system: string; mapping: string }>;
   layers: { concrete: string; human: string; amalgam: string };
+  bridge: string;
   necessity: string;
-  nextStep: string;
+  caminoAmor: string;
   aClaimant: string; bClaimant: string;
 };
 
@@ -57,6 +63,7 @@ export function IsoPanel() {
   const dist = res ? fisherRao(res.vA, res.vB) : 0;
   const sim = res ? Math.max(0, Math.min(1, 1 - dist / (Math.PI / 2))) : 0;
   const third = res ? midpoint(res.vA, res.vB) : null;
+  const meta = third ? metastability(third) : null;
 
   return (
     <div className="space-y-12">
@@ -92,18 +99,45 @@ export function IsoPanel() {
         <div className="space-y-10 animate-[fade-up_0.5s_var(--ease-out-expo)]">
           {/* SIGNATURES + THIRD */}
           <div className="grid lg:grid-cols-3 gap-6">
-            <PoleCard label={res.aClaimant} sig={toSignature(res.vA)} vec={res.vA} color="#00f5ff" tensions={res.tensionsA} />
+            <PoleCard
+              label={res.aClaimant}
+              sig={signedSignature(res.vA, res.signsA)}
+              vec={res.vA} color="#00f5ff" tensions={res.tensionsA}
+            />
             <div className="bg-gradient-to-b from-accent-gold/10 via-white/[0.04] to-accent-gold/10 border border-accent-gold/30 rounded-3xl p-6 flex flex-col items-center text-center">
               <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-2">The third</div>
               <div className="font-display font-black text-5xl mb-1">1<span className="text-accent-cyan">+</span>1<span className="text-accent-magenta">=</span><span className="text-accent-gold">3</span></div>
-              <div className="font-mono text-[10px] text-muted mb-4">τ = {dist.toFixed(3)} rad · {Math.round(sim * 100)}% resonance</div>
+              <div className="font-mono text-[10px] text-muted mb-1">τ = {dist.toFixed(3)} rad · {Math.round(sim * 100)}% resonance</div>
+              {meta && (
+                <div className="font-mono text-[10px] text-accent-gold mb-3">
+                  metaestabilidad · <span className="text-base align-middle">{meta.tag}</span> <span className="text-muted">({meta.label})</span>
+                </div>
+              )}
               {third && <SignatureChart vec={third} size={220} color="#ffcf7d" />}
               <p className="font-serif italic text-lg text-foreground/90 leading-snug mt-4">"{res.polarityCore}"</p>
             </div>
-            <PoleCard label={res.bClaimant} sig={toSignature(res.vB)} vec={res.vB} color="#ff00ea" tensions={res.tensionsB} />
+            <PoleCard
+              label={res.bClaimant}
+              sig={signedSignature(res.vB, res.signsB)}
+              vec={res.vB} color="#ff00ea" tensions={res.tensionsB}
+            />
           </div>
 
-          {/* POLES MATRICES (active/receptive · static/dynamic × space/time) */}
+          {/* POLARITY PAIRS detected */}
+          <Section title="Polar pairs detected" subtitle="The opposites this situation is actually made of">
+            <div className="flex flex-wrap gap-2">
+              {res.polarityPairs.map((p, i) => (
+                <div key={i} className="bg-white/[0.04] border border-white/10 rounded-full pl-1 pr-3 py-1 flex items-center gap-2 text-sm">
+                  <span className="bg-accent-cyan/15 text-accent-cyan px-3 py-0.5 rounded-full text-xs">{p.labelA}</span>
+                  <span className="text-muted text-xs">↔</span>
+                  <span className="bg-accent-magenta/15 text-accent-magenta px-3 py-0.5 rounded-full text-xs">{p.labelB}</span>
+                  <span className="text-muted font-mono text-[10px]">{p.dim}</span>
+                </div>
+              ))}
+            </div>
+          </Section>
+
+          {/* POLES MATRICES */}
           <div className="grid lg:grid-cols-2 gap-6">
             <PoleMatrix title={res.aClaimant} color="#00f5ff" poles={res.polesA} />
             <PoleMatrix title={res.bClaimant} color="#ff00ea" poles={res.polesB} />
@@ -117,8 +151,8 @@ export function IsoPanel() {
             </div>
           </Section>
 
-          {/* ISOMORPHISMS — four extremes */}
-          <Section title="Isomorphisms across extremes" subtitle="Both sides read from a single polar extreme at a time">
+          {/* ISOMORPHISMS */}
+          <Section title="Isomorphisms across extremes" subtitle="Both sides read from one polar extreme at a time">
             <div className="grid md:grid-cols-2 gap-4">
               <IsoCell label="Pure active" body={res.isomorphisms.activeExtreme} />
               <IsoCell label="Pure receptive" body={res.isomorphisms.receptiveExtreme} />
@@ -127,7 +161,7 @@ export function IsoPanel() {
             </div>
           </Section>
 
-          {/* ANALOGUES — same polarity in other systems */}
+          {/* ANALOGUES */}
           <Section title="Same polarity, other systems" subtitle="Isomorphic structures elsewhere">
             <div className="grid md:grid-cols-3 gap-4">
               {res.analogues.map((a, i) => (
@@ -140,7 +174,7 @@ export function IsoPanel() {
           </Section>
 
           {/* THREE LAYERS */}
-          <Section title="Three layers" subtitle="Concrete · Human · Amalgam">
+          <Section title="Three layers" subtitle="Concreta · Humana · Amalgam">
             <div className="grid md:grid-cols-3 gap-4">
               <LayerCard label="Concrete" sub="the actual situation" body={res.layers.concrete} ring="border-accent-cyan/30" />
               <LayerCard label="Human" sub="emotion & subjectivity" body={res.layers.human} ring="border-accent-magenta/30" />
@@ -148,15 +182,21 @@ export function IsoPanel() {
             </div>
           </Section>
 
-          {/* NECESSITY + NEXT STEP */}
+          {/* BRIDGE */}
+          <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6">
+            <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Puente · bridge</div>
+            <p className="font-serif italic text-xl text-foreground/95 leading-snug">{res.bridge}</p>
+          </div>
+
+          {/* NECESSITY + CAMINO AMOR */}
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6">
               <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Necessity report</div>
               <p className="text-base text-foreground/90 leading-relaxed">{res.necessity}</p>
             </div>
             <div className="bg-gradient-to-br from-accent-gold/15 to-transparent border border-accent-gold/40 rounded-3xl p-6">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">Minimum coherent next step</div>
-              <p className="font-serif italic text-xl text-foreground leading-snug">{res.nextStep}</p>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">Camino amor · minimum coherent next step</div>
+              <p className="font-serif italic text-xl text-foreground leading-snug">{res.caminoAmor}</p>
             </div>
           </div>
         </div>
@@ -202,7 +242,7 @@ function PoleCard({ label, sig, vec, color, tensions }: { label: string; sig: st
     <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 flex flex-col items-center">
       <div className="text-[10px] uppercase tracking-[0.3em] mb-1" style={{ color }}>Side</div>
       <div className="font-serif italic text-2xl mb-1 text-center">{label}</div>
-      <div className="font-mono text-[10px] text-muted mb-4">{sig}</div>
+      <div className="font-mono text-[11px] text-muted mb-4">{sig}</div>
       <SignatureChart vec={vec} size={220} color={color} />
       <p className="text-xs text-foreground/70 mt-4 leading-relaxed text-center">{tensions}</p>
     </div>
@@ -223,7 +263,7 @@ function PoleMatrix({ title, color, poles }: { title: string; color: string; pol
         <span className="font-serif italic text-lg">{title}</span>
         <span className="ml-auto text-[10px] uppercase tracking-[0.25em] text-muted">poles</span>
       </div>
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3">
         <div className="text-[10px] uppercase tracking-[0.25em] text-accent-cyan">— space —</div>
         <div className="text-[10px] uppercase tracking-[0.25em] text-accent-magenta">— time —</div>
         <Cell label="active · space" value={poles.activeSpace} />

@@ -45,6 +45,28 @@ export function toSignature(vec: Vec): string {
   return `${dom[0]} { ${dom[1]} }`;
 }
 
+export type Sign = -1 | 0 | 1;
+export type Signs = Record<string, Sign>;
+
+export function signedSignature(vec: Vec, signs: Signs): string {
+  const tag = (d: Dim) => {
+    const s = signs[d] ?? 0;
+    return s === 1 ? `${d}+` : s === -1 ? `${d}−` : d;
+  };
+  const dom = DIMS.filter(d => vec[d] > 0.4).sort((a, b) => vec[b] - vec[a]);
+  if (!dom.length) return tag('Ξ');
+  if (dom.length === 1) return tag(dom[0]);
+  return `${tag(dom[0])} { ${dom.slice(1, 4).map(tag).join(' ')} }`;
+}
+
+export function metastability(midVec: Vec): { tag: 'Ξ' | 'φ+' | 'φ−'; label: string } {
+  const vals = DIMS.map(d => midVec[d]);
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+  const variance = vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length;
+  if (variance < 0.02) return { tag: 'Ξ', label: 'silent equilibrium' };
+  if (midVec['E'] > midVec['T']) return { tag: 'φ+', label: 'expansive tendency' };
+  return { tag: 'φ−', label: 'contractive tendency' };
+
 export function normalize(vec: Partial<Record<string, number>>): Vec {
   const out = {} as Vec;
   DIMS.forEach(d => {

@@ -1,6 +1,6 @@
 export const VECTOR_PROMPT = (concept: string, domain: string) => `You are the mathematical core of the 1+1=3 universal interpreter.
 
-Project the given concept into an 11-dimensional space (Σ).
+Project the given concept into an 11-dimensional space (Σ) — the "crystal of tension".
 Each dimension holds a real value in [0.0, 1.0] indicating its intensity in the concept.
 
 DIMENSIONS:
@@ -19,7 +19,31 @@ DIMENSIONS:
 Concept: "${concept}"
 Source domain: ${domain}
 
-Return the 11 values. Use the keys: Xi, T, R, E, M, V, S, A, F, phi_e, phi_c. Values must be continuous numbers in [0,1], calibrated to the concept. Avoid pure 0 or 1. Aim for a total sum between 2.0 and 6.0.`;
+Return JSON with EXACTLY these keys:
+
+{
+  "vec": { "Xi":0,"T":0,"R":0,"E":0,"M":0,"V":0,"S":0,"A":0,"F":0,"phi_e":0,"phi_c":0 },
+  "tensionMap": {
+    "Xi":  "one short sentence — what pause/silence does in THIS concept",
+    "T":   "what tension does here",
+    "R":   "what relation does here",
+    "E":   "what expansion does here",
+    "M":   "what memory does here",
+    "V":   "what voiding does here",
+    "S":   "what system/structure does here",
+    "A":   "what action does here",
+    "F":   "what focus does here",
+    "phi_e":"what fractal expansion does here",
+    "phi_c":"what fractal contraction does here"
+  },
+  "explanation": "2–4 sentences explaining the concept AS a tension map — name the dominant dimensions, the polarity they form, and the third thing born of that polarity. No filler.",
+  "polarities": [
+    { "a": "pole A label", "b": "pole B label", "dim": "Σ pair e.g. 'T↔E' or 'S↔V'", "note": "one sentence on this specific opposition inside the concept" }
+    // 2 to 4 polarities, specific to THIS concept
+  ]
+}
+
+Values in vec must be continuous numbers in [0,1] keyed Xi, T, R, E, M, V, S, A, F, phi_e, phi_c. Avoid pure 0 or 1. Aim for a total sum between 2.0 and 6.0. Respond with ONLY the JSON, no prose, no code fences.`;
 
 export const ISO_PROMPT = (a: string, b: string) => `You are the mathematical core of the 1+1=3 universal interpreter.
 

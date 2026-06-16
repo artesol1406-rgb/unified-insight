@@ -104,6 +104,11 @@ export function IsoPanel() {
                 title: `${res.aClaimant}  ↔  ${res.bClaimant}`,
                 subtitle: `τ = ${dist.toFixed(3)} rad · ${Math.round(sim * 100)}% resonance${meta ? ` · metaestabilidad ${meta.tag} (${meta.label})` : ""}`,
                 filename: `iso-${res.aClaimant}-vs-${res.bClaimant}.pdf`.replace(/\s+/g, "-").toLowerCase(),
+                crystals: [
+                  { vec: res.vA, signature: signedSignature(res.vA, res.signsA), label: res.aClaimant, accent: [0, 245, 255] },
+                  ...(third ? [{ vec: third, signature: `1+1=3`, label: "The third", accent: [255, 207, 125] as [number, number, number] }] : []),
+                  { vec: res.vB, signature: signedSignature(res.vB, res.signsB), label: res.bClaimant, accent: [255, 0, 234] },
+                ],
                 sections: [
                   { heading: res.aClaimant, subheading: signedSignature(res.vA, res.signsA), body: res.tensionsA },
                   { heading: res.bClaimant, subheading: signedSignature(res.vB, res.signsB), body: res.tensionsB },

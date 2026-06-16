@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { analyzeConcept } from "@/lib/amalgam/amalgam.functions";
 import { DIMS, DOMAINS, normalize, toSignature, translate, makeSentence, hashString, type Vec } from "@/lib/amalgam/engine";
 import { SignatureChart } from "./SignatureChart";
+import { downloadReportPdf } from "@/lib/pdf-export";
 
 const EXAMPLES = ["Entropy", "Silence", "Revolution", "Love", "Forgiveness", "Memory", "Order", "Chaos"];
 const PILL_COLORS = ["bg-accent-cyan text-black", "bg-accent-magenta text-black", "bg-accent-gold text-black"];
@@ -97,6 +98,29 @@ export function RosettaPanel() {
           </div>
         )}
       </div>
+
+      {result && (
+        <div className="max-w-3xl mx-auto -mt-4 flex justify-end">
+          <button
+            onClick={() => downloadReportPdf({
+              title: `Concept: ${result.concept}`,
+              subtitle: `Source domain: ${DOMAINS[result.domain].name}  ·  Σ signature ${sig}`,
+              filename: `rosetta-${result.concept.toLowerCase().replace(/\s+/g, "-")}.pdf`,
+              sections: [
+                { heading: "11D readout", body: DIMS.map(d => `${d}  ${descOf(d).padEnd(16)}  ${(result.vec[d]*100).toFixed(0)}%`).join("\n") },
+                ...translations.map(t => ({
+                  heading: `${t.domain.icon} ${t.domain.name}`,
+                  subheading: t.items.map(it => `${it.dim} ${Math.round(it.intensity*100)}%`).join("  ·  "),
+                  body: t.sentence,
+                })),
+              ],
+            })}
+            className="text-[10px] uppercase tracking-[0.25em] px-4 py-2 border border-accent-gold/40 text-accent-gold rounded hover:bg-accent-gold/10 transition-colors"
+          >
+            ↓ Download PDF
+          </button>
+        </div>
+      )}
 
       {result && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 animate-[fade-up_0.5s_var(--ease-out-expo)]">

@@ -31,9 +31,27 @@ export function ReflectPanel() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <p className="text-center text-sm text-muted mb-8 max-w-md mx-auto">
+      <p className="text-center text-sm text-muted mb-4 max-w-md mx-auto">
         Describe a situation, a tension, a state. The interpreter reads its structure and responds from the geometry — not from advice.
       </p>
+      {messages.length > 0 && (
+        <div className="flex justify-end mb-3">
+          <button
+            onClick={() => downloadReportPdf({
+              title: "Reflect — interpreter session",
+              subtitle: `${messages.length} exchange${messages.length === 1 ? "" : "s"}`,
+              filename: `reflect-session-${Date.now()}.pdf`,
+              sections: messages.map(m => ({
+                heading: m.role === "user" ? "You" : "Interpreter",
+                body: m.content,
+              })),
+            })}
+            className="text-[10px] uppercase tracking-[0.25em] px-4 py-2 border border-accent-gold/40 text-accent-gold rounded hover:bg-accent-gold/10 transition-colors"
+          >
+            ↓ Download PDF
+          </button>
+        </div>
+      )}
 
       <div className="min-h-[400px] bg-white/[0.02] border border-border rounded-3xl p-6 space-y-4 mb-4">
         {messages.length === 0 && (

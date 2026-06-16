@@ -6,6 +6,7 @@ import {
   type Vec, type Signs,
 } from "@/lib/amalgam/engine";
 import { SignatureChart } from "./SignatureChart";
+import { downloadReportPdf } from "@/lib/pdf-export";
 
 type Poles = {
   activeSpace: string; receptiveSpace: string;

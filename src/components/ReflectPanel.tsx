@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { reflect } from "@/lib/amalgam/amalgam.functions";
+import { downloadReportPdf } from "@/lib/pdf-export";
 
 interface Msg { role: "user" | "assistant"; content: string; }
 

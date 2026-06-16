@@ -106,6 +106,18 @@ function Page() {
           </p>
           <div className="font-mono text-[10px] uppercase tracking-widest text-accent-gold/60">Ξ T R E M V S A F φe φc</div>
         </div>
+        <div className="max-w-7xl mx-auto mt-8 flex justify-center">
+          <a
+            href="https://t.me/Keiserdom"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-5 py-2.5 border border-accent-cyan/40 rounded-full text-xs font-medium text-accent-cyan hover:bg-accent-cyan hover:text-black transition-colors"
+          >
+            <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden="true"><path d="M9.04 15.47 8.7 20.2c.48 0 .69-.2.94-.45l2.26-2.16 4.69 3.42c.86.47 1.47.22 1.7-.79l3.08-14.43h.01c.27-1.26-.45-1.75-1.29-1.44L2.2 9.94c-1.23.48-1.21 1.17-.21 1.48l4.66 1.45 10.83-6.82c.51-.32.97-.14.59.18z"/></svg>
+            Contact @Keiserdom on Telegram
+          </a>
+        </div>
+
       </footer>
     </div>
   );

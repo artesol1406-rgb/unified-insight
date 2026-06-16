@@ -98,6 +98,40 @@ export function IsoPanel() {
 
       {res && (
         <div className="space-y-10 animate-[fade-up_0.5s_var(--ease-out-expo)]">
+          <div className="flex justify-end">
+            <button
+              onClick={() => downloadReportPdf({
+                title: `${res.aClaimant}  ↔  ${res.bClaimant}`,
+                subtitle: `τ = ${dist.toFixed(3)} rad · ${Math.round(sim * 100)}% resonance${meta ? ` · metaestabilidad ${meta.tag} (${meta.label})` : ""}`,
+                filename: `iso-${res.aClaimant}-vs-${res.bClaimant}.pdf`.replace(/\s+/g, "-").toLowerCase(),
+                sections: [
+                  { heading: res.aClaimant, subheading: signedSignature(res.vA, res.signsA), body: res.tensionsA },
+                  { heading: res.bClaimant, subheading: signedSignature(res.vB, res.signsB), body: res.tensionsB },
+                  { heading: "Polarity core", body: res.polarityCore },
+                  { heading: "Polar pairs detected", body: res.polarityPairs.map(p => `${p.labelA}  ↔  ${p.labelB}   (${p.dim})`).join("\n") },
+                  { heading: `${res.aClaimant} — poles`, body:
+                    `active · space:     ${res.polesA.activeSpace}\nactive · time:      ${res.polesA.activeTime}\nreceptive · space:  ${res.polesA.receptiveSpace}\nreceptive · time:   ${res.polesA.receptiveTime}\ndynamic · space:    ${res.polesA.dynamicSpace}\ndynamic · time:     ${res.polesA.dynamicTime}\nstatic · space:     ${res.polesA.staticSpace}\nstatic · time:      ${res.polesA.staticTime}` },
+                  { heading: `${res.bClaimant} — poles`, body:
+                    `active · space:     ${res.polesB.activeSpace}\nactive · time:      ${res.polesB.activeTime}\nreceptive · space:  ${res.polesB.receptiveSpace}\nreceptive · time:   ${res.polesB.receptiveTime}\ndynamic · space:    ${res.polesB.dynamicSpace}\ndynamic · time:     ${res.polesB.dynamicTime}\nstatic · space:     ${res.polesB.staticSpace}\nstatic · time:      ${res.polesB.staticTime}` },
+                  { heading: "Matrix of polar tensions", subheading: "From SPACE", body: res.matrix.spaceTension },
+                  { subheading: "From TIME", body: res.matrix.timeTension },
+                  { heading: "Isomorphisms across extremes",
+                    body: `Pure active:     ${res.isomorphisms.activeExtreme}\n\nPure receptive:  ${res.isomorphisms.receptiveExtreme}\n\nPure dynamic:    ${res.isomorphisms.dynamicExtreme}\n\nPure static:     ${res.isomorphisms.staticExtreme}` },
+                  { heading: "Same polarity, other systems",
+                    body: res.analogues.map(a => `${a.system}\n${a.mapping}`).join("\n\n") },
+                  { heading: "Three layers", subheading: "Concrete · the actual situation", body: res.layers.concrete },
+                  { subheading: "Human · emotion & subjectivity", body: res.layers.human },
+                  { subheading: "Amalgam · holographic tension map", body: res.layers.amalgam },
+                  { heading: "Puente · bridge", body: res.bridge },
+                  { heading: "Necessity report", body: res.necessity },
+                  { heading: "Camino amor · minimum coherent next step", body: res.caminoAmor },
+                ],
+              })}
+              className="text-[10px] uppercase tracking-[0.25em] px-4 py-2 border border-accent-gold/40 text-accent-gold rounded hover:bg-accent-gold/10 transition-colors"
+            >
+              ↓ Download PDF
+            </button>
+          </div>
           {/* SIGNATURES + THIRD */}
           <div className="grid lg:grid-cols-3 gap-6">
             <PoleCard

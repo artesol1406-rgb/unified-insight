@@ -81,6 +81,3 @@ export function downloadReportPdf({ title, subtitle, sections, filename }: Optio
   doc.save(filename);
 }
 
-export function DownloadPdfButton({ onClick, label = "Download PDF" }: { onClick: () => void; label?: string }) {
-  return null as unknown as JSX.Element;
-}

@@ -45,6 +45,27 @@ function gwError(e: unknown): never {
   throw new Error(msg);
 }
 
+const TensionMapSchema = z.object({
+  Xi: z.string(), T: z.string(), R: z.string(), E: z.string(),
+  M: z.string(), V: z.string(), S: z.string(), A: z.string(),
+  F: z.string(), phi_e: z.string(), phi_c: z.string(),
+});
+const ConceptSchema = z.object({
+  vec: VecSchema,
+  tensionMap: TensionMapSchema,
+  explanation: z.string(),
+  polarities: z.array(z.object({
+    a: z.string(), b: z.string(), dim: z.string(), note: z.string(),
+  })).min(1).max(6),
+});
+
+function toTensionMap(r: z.infer<typeof TensionMapSchema>): Record<string, string> {
+  return {
+    'Ξ': r.Xi, 'T': r.T, 'R': r.R, 'E': r.E, 'M': r.M, 'V': r.V,
+    'S': r.S, 'A': r.A, 'F': r.F, 'φe': r.phi_e, 'φc': r.phi_c,
+  };
+}
+
 export const analyzeConcept = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z.object({ concept: z.string().min(1).max(200), domain: z.string().min(1).max(40) }).parse(input)
@@ -54,11 +75,15 @@ export const analyzeConcept = createServerFn({ method: "POST" })
       const gateway = await getGateway();
       const { text } = await generateText({
         model: gateway(MODEL),
-        prompt: VECTOR_PROMPT(data.concept, data.domain) +
-          `\n\nRespond ONLY with valid JSON in this exact shape, no prose, no code fences:\n{"Xi":0.0,"T":0.0,"R":0.0,"E":0.0,"M":0.0,"V":0.0,"S":0.0,"A":0.0,"F":0.0,"phi_e":0.0,"phi_c":0.0}`,
+        prompt: VECTOR_PROMPT(data.concept, data.domain),
       });
-      const parsed = VecSchema.parse(extractJson(text));
-      return { vec: toVec(parsed) };
+      const parsed = ConceptSchema.parse(extractJson(text));
+      return {
+        vec: toVec(parsed.vec),
+        tensionMap: toTensionMap(parsed.tensionMap),
+        explanation: parsed.explanation,
+        polarities: parsed.polarities,
+      };
     } catch (e) { gwError(e); }
   });
 

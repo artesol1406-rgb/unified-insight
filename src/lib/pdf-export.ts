@@ -264,10 +264,11 @@ function drawPolygonFilled(doc: jsPDF, pts: [number, number][], opacity = 0.2) {
     rel.push([pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]]);
   }
   rel.push([pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]]);
-  const g = doc.GState ? new doc.GState({ opacity }) : null;
-  if (g) doc.setGState(g);
+  const anyDoc = doc as unknown as { GState?: new (opts: { opacity: number }) => unknown; setGState?: (s: unknown) => void };
+  const g = anyDoc.GState ? new anyDoc.GState({ opacity }) : null;
+  if (g && anyDoc.setGState) anyDoc.setGState(g);
   doc.lines(rel, dx, dy, [1, 1], "FD", true);
-  if (g) doc.setGState(new doc.GState({ opacity: 1 }));
+  if (anyDoc.GState && anyDoc.setGState) anyDoc.setGState(new anyDoc.GState({ opacity: 1 }));
 }
 
 // Helper for callers that need the full 11D readout as a text block

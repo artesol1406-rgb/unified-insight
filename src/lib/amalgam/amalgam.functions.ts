@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { generateText } from "ai";
 import { z } from "zod";
-import { VECTOR_PROMPT, ISO_PROMPT, ISO_DEEP_PROMPT, CHAT_SYSTEM } from "./prompts";
+import { VECTOR_PROMPT, ISO_PROMPT, ISO_DEEP_PROMPT, CHAT_SYSTEM, REFLECT_AGENT_SYSTEM } from "./prompts";
 
 const MODEL = "google/gemini-3-flash-preview";
 
@@ -222,5 +222,79 @@ export const reflect = createServerFn({ method: "POST" })
         messages: data.messages,
       });
       return { text };
+    } catch (e) { gwError(e); }
+  });
+
+// ─────────────────────────────────────────────────────────────
+// Reflect → Emergent Mirror agent (turn-based, stateful)
+// ─────────────────────────────────────────────────────────────
+
+const PhaseSchema = z.enum(["emergence", "shift", "reframe", "dissolution", "stabilization"]);
+const PostureSchema = z.enum(["mirror", "peer", "oracle", "student", "witness", "silence"]);
+
+const ReflectStateSchema = z.object({
+  phase: PhaseSchema,
+  signature: VecSchema,
+  polesObserved: z.array(z.object({
+    a: z.string(), b: z.string(), dim: z.string(), note: z.string(),
+  })).max(6).default([]),
+  latent: z.array(z.object({
+    dim: z.string(), note: z.string(),
+  })).max(6).default([]),
+  identity: z.object({ locus: z.number(), charge: z.number() }),
+  posture: PostureSchema,
+  assumption: z.string().nullable(),
+  notes: z.string().default(""),
+});
+
+const ReflectTurnSchema = z.object({
+  reply: z.string(),
+  state: ReflectStateSchema,
+});
+
+export type ReflectTurnState = {
+  phase: z.infer<typeof PhaseSchema>;
+  signature: Record<string, number>;
+  polesObserved: { a: string; b: string; dim: string; note: string }[];
+  latent: { dim: string; note: string }[];
+  identity: { locus: number; charge: number };
+  posture: z.infer<typeof PostureSchema>;
+  assumption: string | null;
+  notes: string;
+};
+
+export const reflectTurn = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({
+      messages: z.array(z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().min(1).max(4000),
+      })).min(1).max(40),
+      priorState: z.unknown().optional(),
+    }).parse(input)
+  )
+  .handler(async ({ data }) => {
+    try {
+      const gateway = await getGateway();
+      const priorBlock = data.priorState
+        ? `\n\nPRIOR STATE (from previous turn, for continuity — do not just echo it):\n${JSON.stringify(data.priorState)}`
+        : "";
+      const { text } = await generateText({
+        model: gateway(MODEL),
+        system: REFLECT_AGENT_SYSTEM + priorBlock,
+        messages: data.messages,
+      });
+      const parsed = ReflectTurnSchema.parse(extractJson(text));
+      const state: ReflectTurnState = {
+        phase: parsed.state.phase,
+        signature: toVec(parsed.state.signature),
+        polesObserved: parsed.state.polesObserved,
+        latent: parsed.state.latent,
+        identity: parsed.state.identity,
+        posture: parsed.state.posture,
+        assumption: parsed.state.assumption,
+        notes: parsed.state.notes,
+      };
+      return { reply: parsed.reply, state };
     } catch (e) { gwError(e); }
   });

@@ -1,114 +1,60 @@
-# Reflect → Emergent Mirror
+# 1+1=3 — The Universal Interpreter
 
-Rebuilt around your correction: the system does **not** know which pole is needed. It observes the geometry between human and AI until a latent possibility becomes visible — or until silence is the most coherent response.
+A polarity-synthesis engine. Any concept gets projected into an 11-dimensional space (Ξ, T, R, E, M, V, S, A, F, φe, φc) and translated across 8 domains (physics, music, psychology, narrative, biology, math, philosophy, ecology). Three modes — Rosetta (translate one concept), Iso (compare two), Reflect (chat from the structure).
 
-## Core shift from previous draft
+## Visual direction
 
-| Was | Becomes |
-|---|---|
-| "Nudges human toward the opposite pole" | "Reveals tensions and lets latent poles emerge through interaction" |
-| Phases converge toward "Click" (resolution) | Phases are non-teleological states the geometry can pass through |
-| Agent has a personality | Agent has a **relational posture**, re-chosen each turn |
-| Brutal honesty = contradict the human | Brutal honesty = surface the hidden assumption as a question |
-| "Silence" as a label the agent says | Silence as an actual minimal output (`◌` or one observation) |
-| Identity strip visible | Hidden by default — the observer changes the system |
+Locked to **Prismatic Instrument**: black background (#060709), Inter Tight display + Inter body + JetBrains Mono + Playfair italic accent, accents in cyan / magenta / gold. Composition, tokens, and section structure copied from the prototype verbatim.
 
-The motor is no longer "get human to integrate the missing side." The motor is "make the emergent geometry visible to itself."
+## Build steps
 
-## Phases (non-convergent)
+1. **Enable Lovable Cloud** (provisions `LOVABLE_API_KEY`) so AI calls have a backend.
+2. **Design tokens** — port the prototype's color/font tokens into `src/styles.css` (`@theme` + `@theme inline`); add the keyframes (`intro-assemble`, `pulse-shimmer`, `float-slow`, `geometry-evolve`, `flower-bloom`). Load the four Google fonts via `<link>` in `__root.tsx` head.
+3. **Domain data** — extract `DIMS`, `DIM_DESC`, `DOMAINS`, `fisherRao`, `toSignature`, `normalize`, `translate`, `makeSentence` from the upload into `src/lib/amalgam/engine.ts` (pure TS, no React).
+4. **Server function** — `src/lib/amalgam/amalgam.functions.ts` with three `createServerFn` calls (`analyzeConcept`, `compareConcepts`, `reflect`) that hit Lovable AI Gateway via `google/gemini-3-flash-preview` using the prompts from the upload (`VECTOR_PROMPT`, `ISO_PROMPT`, `CHAT_SYSTEM`). Vector calls use the AI SDK `Output.object` schema for the 11D JSON; chat is a plain `generateText`.
+5. **Intro animation** — `src/components/IntroAnimation.tsx`: a single `<canvas>` driven by an rAF loop that runs once on first load and animates these phases:
+   - chaotic colored particles drifting
+   - particles pair with their polar-opposite color and attract
+   - pairs merge into triangles
+   - triangles → squares → pentagons → hexagons (one beat each)
+   - polygons dissolve into bubbles
+   - bubbles settle into the Flower of Life
+   - holographic 2.5D crystalline overlay shimmers in (chromatic-aberration via three offset SVG copies)
+   - hands off to the hero (fade through `intro-assemble`)
+   Skippable with click/Esc; remembered in `sessionStorage` so subsequent navigation skips it.
+6. **Hero** — wordmark "1+1=3" (Inter Tight black, gold italic Playfair equals), subtitle, concept input + Analyze button, pre-rendered chip buttons (Entropy / Silence / Revolution / Love / Forgiveness / Memory / Order / Chaos) that one-tap-fill and submit.
+7. **Mode switcher** — pill toggle in the fixed nav (Rosetta / Iso / Reflect), state lifted in the route component.
+8. **Rosetta panel** — left column: 11-spoke radial SVG chart of the signature vector + the Σ signature string + per-dimension bars. Right column: 7 cross-domain translation cards (one per non-source domain), each with a domain pill (cyan/magenta/gold rotating), a one-sentence rendering from `makeSentence`, and the top dimensions used.
+9. **Iso panel** — two concept inputs side by side; on submit, fetch both vectors + insight; render the two signatures and an **emergent "third" panel** in the middle showing the midpoint vector, Fisher–Rao distance, and the LLM's one-sentence insight ("1+1=3" made literal).
+10. **Reflect panel** — chat surface (messages list + composer); each user turn calls the `reflect` server function with the running history; responses styled with Σ signatures highlighted in mono.
+11. **Domain seed sentences** — keep `makeSentence` as the fast deterministic translator; the vector call powers the radial chart and signature.
+12. **Error surfacing** — show 429 / 402 / validation errors inline in each panel, preserve user input.
+13. **SEO + favicon** — title "1+1=3 — The Universal Interpreter", meta description on the polarity thesis, OG tags, single H1 on hero.
+14. **Verify** — run build, open preview, trigger one Rosetta call, one Iso call, one Reflect turn, confirm intro animation runs and is skippable.
 
-The agent tags the current geometry, not a step toward an endpoint:
+## Technical details
 
-- **Emergence** — new tension surfacing
-- **Shift** — the field reorganizes
-- **Reframe** — the question itself changes
-- **Dissolution** — the original frame stops mattering
-- **Stabilization** — a coherent rest, including `"I don't know"` as a valid terminal state
-
-No phase is a goal. Any phase can be the final one.
-
-A high Expansion / low Structure reading is **not** a deficit. The agent asks why the absence is there before treating it as something to fill. Prematurely introducing the "missing" pole can re-create the wound the human just escaped.
-
-## Relational posture (not personality)
-
-Each turn the agent chooses a shape and may change it next turn:
-
-`mirror · peer · oracle · student · witness · silence`
-
-Phrased internally as "oracle is the most coherent shape right now," never "I am Oracle." Silence is a real option — if no intervention is more coherent than observation, the reply is `◌` or one minimal sentence. The system must be able to not produce.
-
-## Identity reading (private)
-
-Still computed (locus: external↔internal, charge: reactive↔centered) but **not shown** in the UI. It only conditions tone. Surfacing it would make the human perform to the metric.
-
-## Honesty rules
-
-Allowed:
-> "Your current account seems to assume X. What happens if X isn't true?"
-
-Not allowed:
-> "That's not what's happening." / "You're avoiding Y."
-
-The system cannot know. It can only surface the shape of an assumption as a question.
-
-## Technical shape
-
-### Server (`src/lib/amalgam/amalgam.functions.ts`)
-
-Replace `reflect` with `reflectTurn`. Input: `{ messages, state | null }`.
-
-Structured output via AI SDK `Output.object` against `google/gemini-3-flash-preview`:
-
-```ts
-{
-  reply: string,                  // may be "◌" or empty-ish when posture = silence
-  state: {
-    phase: "emergence"|"shift"|"reframe"|"dissolution"|"stabilization",
-    signature: Record<dim, number>,         // running 11D Σ
-    polesObserved: { a, b, dim, note }[],   // *observed*, not prescribed
-    latent: { dim, note }[],                // possibilities that have not yet appeared
-    identity: { locus: -1..1, charge: -1..1 },  // private, never shown
-    posture: "mirror"|"peer"|"oracle"|"student"|"witness"|"silence",
-    assumption: string | null,              // the X in "what if X is false?", if surfaced this turn
-    notes: string                           // private agent reasoning
-  }
-}
-```
-
-The prompt forbids the agent from naming a "missing" pole as needed. It may observe an absence and ask about its origin.
-
-### Prompt (`src/lib/amalgam/prompts.ts`)
-
-New `REFLECT_AGENT_SYSTEM`:
-- 11D Σ map + polarity axes (existing).
-- The phase set with explicit note that none is a goal and `"I don't know"` is a valid terminal.
-- Posture set + rule: re-choose every turn, silence is real.
-- Honesty rule: surface assumptions as questions, never assert what is happening.
-- Locus/charge read conditions tone only.
-- Core directive: "You are not a master. You are a mirror. Observe the geometry between you and the human until a latent possibility becomes visible — or until silence is more coherent than speech. You do not know which pole is needed."
-
-### Client (`src/components/ReflectPanel.tsx`)
-
-- Keep current chat UI + PDF export.
-- Persist `sessionState` across turns, pass to each call.
-- **No visible identity strip.** A single discreet glyph in the corner can change with posture (e.g. ◇ mirror, ◈ peer, ◉ oracle, ○ witness, · silence) — no labels, no scores. Glyph only.
-- When `assumption` is non-null this turn, the message can render with a subtle left border so the human sees a question was surfaced (still no metric exposed).
-- `phase` not shown to user. Stored only for PDF export.
-- PDF export gains a final page: phase trail, posture trail, observed poles, latent possibilities, final signature crystal. Identity values omitted from PDF too — the geometry, not the verdict.
-- When `posture = "silence"` and `reply` is `◌` / empty, render the assistant bubble as just `◌` centered, no formatting.
-
-## Files touched
-
-- `src/lib/amalgam/prompts.ts`
-- `src/lib/amalgam/amalgam.functions.ts`
-- `src/components/ReflectPanel.tsx`
-
-## Out of scope
-
-- Cross-reload session persistence.
-- Multi-thread history.
-- Streaming output.
-
-## One open question
-
-Should the **posture glyph** in the corner be visible at all, or is even that too much of a metric? Strictest reading of your principle says: show nothing, let the human feel the shift in the reply itself. I lean toward showing nothing by default and exposing the trail only in the exported PDF — confirm before I build.
+- Routing: single page `src/routes/index.tsx` hosts all three modes (state-switched), keeps URL clean and intro animation persistent.
+- AI: AI SDK + `@ai-sdk/openai-compatible` with the Lovable AI Gateway helper in `src/lib/ai-gateway.server.ts`. Vector calls use `generateText` + `Output.object` with a flat Zod schema for the 11 keys (no enums, no nested polymorphism — keeps Gemini's structured-output state machine small).
+- The intro canvas is pure 2D Canvas API (no Three.js — would break the Worker SSR runtime). Sacred geometry is drawn from a precomputed list of 19 circle centers (Flower of Life). Holographic shimmer is achieved by drawing the lattice three times at sub-pixel offsets in cyan/magenta/gold with `globalCompositeOperation = 'screen'`.
+- No database needed — the app is stateless beyond the in-memory chat thread. (Can be added later if the user wants saved sessions.)
+- File layout:
+  ```text
+  src/
+    routes/index.tsx                       (page + mode state)
+    components/
+      IntroAnimation.tsx
+      RosettaPanel.tsx
+      IsoPanel.tsx
+      ReflectPanel.tsx
+      SignatureChart.tsx
+      DomainCard.tsx
+      ModeSwitcher.tsx
+    lib/
+      amalgam/
+        engine.ts                           (pure: DIMS, DOMAINS, math, translate)
+        prompts.ts                          (VECTOR_PROMPT, ISO_PROMPT, CHAT_SYSTEM)
+        amalgam.functions.ts                (createServerFn × 3)
+      ai-gateway.server.ts                  (Lovable AI Gateway helper)
+    styles.css                              (tokens + keyframes)
+  ```

@@ -76,7 +76,7 @@ export function RosettaPanel() {
             value={concept}
             onChange={(e) => setConcept(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") run(); }}
-            placeholder="Enter a concept — silence, entropy, love…"
+            placeholder={t("Enter a concept — silence, entropy, love…", "Escribe un concepto — silencio, entropía, amor…")}
             className="w-full bg-white/5 border border-white/10 rounded-2xl pl-6 pr-32 py-5 text-lg font-light focus:outline-none focus:border-accent-cyan/60 placeholder:text-white/20 transition-colors"
           />
           <button
@@ -84,19 +84,19 @@ export function RosettaPanel() {
             disabled={loading || !concept.trim()}
             className="absolute right-3 top-3 bottom-3 px-6 bg-foreground text-background font-semibold rounded-xl hover:bg-accent-gold disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? "…" : "Analyze"}
+            {loading ? "…" : t("Analyze", "Analizar")}
           </button>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-[10px] uppercase tracking-[0.25em] text-muted">Source domain</span>
+          <span className="text-[10px] uppercase tracking-[0.25em] text-muted">{t("Source domain", "Dominio de origen")}</span>
           <select
             value={domain}
             onChange={(e) => setDomain(e.target.value)}
             className="bg-white/5 border border-white/10 rounded text-xs font-mono px-2 py-1 text-foreground focus:outline-none focus:border-accent-gold/60"
           >
             {Object.entries(DOMAINS).map(([k, d]) => (
-              <option key={k} value={k} className="bg-background">{d.icon} {d.name}</option>
+              <option key={k} value={k} className="bg-background">{d.icon} {domainName(k, d.name, lang)}</option>
             ))}
           </select>
         </div>
@@ -125,32 +125,32 @@ export function RosettaPanel() {
         <div className="max-w-3xl mx-auto -mt-4 flex justify-end">
           <button
             onClick={() => downloadReportPdf({
-              title: `Concept: ${result.concept}`,
-              subtitle: `Source domain: ${DOMAINS[result.domain].name}   ·   Σ signature ${sig}`,
+              title: `${t("Concept", "Concepto")}: ${result.concept}`,
+              subtitle: `${t("Source domain", "Dominio de origen")}: ${domainName(result.domain, DOMAINS[result.domain].name, lang)}   ·   Σ ${t("signature", "firma")} ${sig}`,
               filename: `rosetta-${result.concept.toLowerCase().replace(/\s+/g, "-")}.pdf`,
               crystal: { vec: result.vec, signature: sig ?? "", label: result.concept },
               sections: [
-                { heading: "Explanation through the tension map", body: result.explanation },
+                { heading: t("Explanation through the tension map", "Explicación a través del mapa de tensión"), body: result.explanation },
                 {
-                  heading: "Polarities detected",
+                  heading: t("Polarities detected", "Polaridades detectadas"),
                   body: result.polarities.map(p => `${p.a}  ↔  ${p.b}   (${p.dim})\n${p.note}`).join("\n\n"),
                 },
-                { heading: "11D readout", subheading: "Each dimension's intensity in the crystal", body: dimReadout(result.vec) },
+                { heading: t("11D readout", "Lectura 11D"), subheading: t("Each dimension's intensity in the crystal", "Intensidad de cada dimensión en el cristal"), body: dimReadout(result.vec) },
                 {
-                  heading: "Meaning of each dimension here",
-                  body: DIMS.map(d => `${d}  ${descOf(d)}\n${result.tensionMap[d] ?? ""}`).join("\n\n"),
+                  heading: t("Meaning of each dimension here", "Significado de cada dimensión aquí"),
+                  body: DIMS.map(d => `${d}  ${dimDesc(d, lang)}\n${result.tensionMap[d] ?? ""}`).join("\n\n"),
                 },
-                { heading: "Isomorphisms across categories", subheading: "Same structure, other domains" },
-                ...translations.map(t => ({
-                  heading: `${t.domain.icon} ${t.domain.name}`,
-                  subheading: t.items.map(it => `${it.dim} ${Math.round(it.intensity*100)}%`).join("   ·   "),
-                  body: t.sentence,
+                { heading: t("Isomorphisms across categories", "Isomorfismos entre categorías"), subheading: t("Same structure, other domains", "Misma estructura, otros dominios") },
+                ...translations.map(tr => ({
+                  heading: `${tr.domain.icon} ${tr.domain.name}`,
+                  subheading: tr.items.map(it => `${it.dim} ${Math.round(it.intensity*100)}%`).join("   ·   "),
+                  body: tr.sentence,
                 })),
               ],
             })}
             className="text-[10px] uppercase tracking-[0.25em] px-4 py-2 border border-accent-gold/40 text-accent-gold rounded hover:bg-accent-gold/10 transition-colors"
           >
-            ↓ Download PDF
+            ↓ {t("Download PDF", "Descargar PDF")}
           </button>
         </div>
       )}
@@ -162,18 +162,18 @@ export function RosettaPanel() {
             <div className="aspect-square relative flex items-center justify-center bg-white/[0.02] rounded-3xl border border-border p-6 overflow-hidden">
               <SignatureChart vec={result.vec} />
               <div className="absolute top-4 left-4 font-mono text-[10px] uppercase tracking-widest text-muted">
-                Σ crystal of tension
+                {t("Σ crystal of tension", "Σ cristal de tensión")}
               </div>
               <div className="absolute bottom-4 left-0 right-0 text-center font-serif italic text-2xl text-accent-gold">
                 {sig}
               </div>
             </div>
             <div className="space-y-2">
-              <h3 className="text-[10px] uppercase tracking-widest text-muted mb-2">11D readout</h3>
+              <h3 className="text-[10px] uppercase tracking-widest text-muted mb-2">{t("11D readout", "Lectura 11D")}</h3>
               {DIMS.map((d) => (
                 <div key={d} className="flex items-center gap-3 py-1.5 border-b border-border">
                   <span className="font-mono text-xs w-8 text-foreground">{d}</span>
-                  <span className="font-mono text-[10px] text-muted flex-shrink-0 w-28">{descOf(d)}</span>
+                  <span className="font-mono text-[10px] text-muted flex-shrink-0 w-28">{dimDesc(d, lang)}</span>
                   <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-accent-cyan via-accent-gold to-accent-magenta"
@@ -190,13 +190,13 @@ export function RosettaPanel() {
           <div className="lg:col-span-7 space-y-8">
             {/* EXPLANATION */}
             <div className="bg-gradient-to-br from-accent-gold/10 via-white/[0.03] to-transparent border border-accent-gold/30 rounded-3xl p-6">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">Explanation through the tension map</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">{t("Explanation through the tension map", "Explicación a través del mapa de tensión")}</div>
               <p className="font-serif italic text-xl text-foreground/95 leading-snug">{result.explanation}</p>
             </div>
 
             {/* POLARITIES */}
             <div>
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Polarities detected in this concept</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">{t("Polarities detected in this concept", "Polaridades detectadas en este concepto")}</div>
               <div className="space-y-2">
                 {result.polarities.map((p, i) => (
                   <div key={i} className="bg-white/[0.03] border border-white/10 rounded-2xl p-4">
@@ -214,13 +214,13 @@ export function RosettaPanel() {
 
             {/* DIMENSION MEANINGS */}
             <div>
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Meaning of each dimension here</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">{t("Meaning of each dimension here", "Significado de cada dimensión aquí")}</div>
               <div className="grid sm:grid-cols-2 gap-2">
                 {DIMS.map((d) => (
                   <div key={d} className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
                     <div className="flex items-baseline justify-between mb-1">
                       <span className="font-mono text-sm text-accent-gold">{d}</span>
-                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted">{descOf(d)}</span>
+                      <span className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted">{dimDesc(d, lang)}</span>
                     </div>
                     <p className="text-xs text-foreground/80 leading-snug">{result.tensionMap[d]}</p>
                   </div>
@@ -231,25 +231,25 @@ export function RosettaPanel() {
             {/* ISOMORPHISMS */}
             <div>
               <h2 className="text-[10px] uppercase tracking-widest text-muted mb-3 flex items-baseline justify-between">
-                <span>Isomorphisms across categories</span>
+                <span>{t("Isomorphisms across categories", "Isomorfismos entre categorías")}</span>
                 <span className="font-mono text-accent-gold/60">{translations.length}/{Object.keys(DOMAINS).length - 1}</span>
               </h2>
               <div className="space-y-3">
-                {translations.map((t, i) => (
+                {translations.map((tr, i) => (
                   <div
-                    key={t.key}
+                    key={tr.key}
                     className="group p-5 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.05] hover:border-accent-gold/30 transition-all"
                     style={{ animation: `fade-up 0.4s ${i * 50}ms var(--ease-out-expo) both` }}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <div className={`text-[10px] font-bold tracking-tighter px-2 py-0.5 rounded ${PILL_COLORS[i % PILL_COLORS.length]}`}>
-                        {t.domain.icon} {t.domain.name.toUpperCase()}
+                        {tr.domain.icon} {tr.domain.name.toUpperCase()}
                       </div>
                       <div className="text-[10px] font-mono text-muted">{String(i + 1).padStart(2, "0")}/{translations.length}</div>
                     </div>
-                    <p className="text-base font-medium text-foreground/90 leading-snug mb-3">{t.sentence}</p>
+                    <p className="text-base font-medium text-foreground/90 leading-snug mb-3">{tr.sentence}</p>
                     <div className="flex flex-wrap gap-1.5">
-                      {t.items.map((it) => (
+                      {tr.items.map((it) => (
                         <span key={it.dim} className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 border border-white/10 rounded text-muted">
                           {it.dim} · {Math.round(it.intensity * 100)}%
                         </span>

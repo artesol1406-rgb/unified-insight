@@ -283,9 +283,10 @@ function SideInput({
 }
 
 function PoleCard({ label, sig, vec, color, tensions }: { label: string; sig: string; vec: Vec; color: string; tensions: string }) {
+  const { t } = useLang();
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 flex flex-col items-center">
-      <div className="text-[10px] uppercase tracking-[0.3em] mb-1" style={{ color }}>Side</div>
+      <div className="text-[10px] uppercase tracking-[0.3em] mb-1" style={{ color }}>{t("Side", "Lado")}</div>
       <div className="font-serif italic text-2xl mb-1 text-center">{label}</div>
       <div className="font-mono text-[11px] text-muted mb-4">{sig}</div>
       <SignatureChart vec={vec} size={220} color={color} />
@@ -295,30 +296,34 @@ function PoleCard({ label, sig, vec, color, tensions }: { label: string; sig: st
 }
 
 function PoleMatrix({ title, color, poles }: { title: string; color: string; poles: Poles }) {
+  const { t } = useLang();
   const Cell = ({ label, value }: { label: string; value: string }) => (
     <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
       <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted mb-1">{label}</div>
       <div className="text-xs leading-snug text-foreground/85">{value}</div>
     </div>
   );
+  const sp = t("space", "espacio"), ti = t("time", "tiempo");
+  const ac = t("active", "activo"), rc = t("receptive", "receptivo");
+  const dy = t("dynamic", "dinámico"), st = t("static", "estático");
   return (
     <div className="bg-white/[0.02] border border-white/10 rounded-3xl p-5">
       <div className="flex items-center gap-2 mb-4">
         <span className="inline-block w-2 h-2 rounded-full" style={{ background: color }} />
         <span className="font-serif italic text-lg">{title}</span>
-        <span className="ml-auto text-[10px] uppercase tracking-[0.25em] text-muted">poles</span>
+        <span className="ml-auto text-[10px] uppercase tracking-[0.25em] text-muted">{t("poles", "polos")}</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-cyan">— space —</div>
-        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-magenta">— time —</div>
-        <Cell label="active · space" value={poles.activeSpace} />
-        <Cell label="active · time" value={poles.activeTime} />
-        <Cell label="receptive · space" value={poles.receptiveSpace} />
-        <Cell label="receptive · time" value={poles.receptiveTime} />
-        <Cell label="dynamic · space" value={poles.dynamicSpace} />
-        <Cell label="dynamic · time" value={poles.dynamicTime} />
-        <Cell label="static · space" value={poles.staticSpace} />
-        <Cell label="static · time" value={poles.staticTime} />
+        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-cyan">— {sp} —</div>
+        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-magenta">— {ti} —</div>
+        <Cell label={`${ac} · ${sp}`} value={poles.activeSpace} />
+        <Cell label={`${ac} · ${ti}`} value={poles.activeTime} />
+        <Cell label={`${rc} · ${sp}`} value={poles.receptiveSpace} />
+        <Cell label={`${rc} · ${ti}`} value={poles.receptiveTime} />
+        <Cell label={`${dy} · ${sp}`} value={poles.dynamicSpace} />
+        <Cell label={`${dy} · ${ti}`} value={poles.dynamicTime} />
+        <Cell label={`${st} · ${sp}`} value={poles.staticSpace} />
+        <Cell label={`${st} · ${ti}`} value={poles.staticTime} />
       </div>
     </div>
   );

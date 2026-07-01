@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { reflect } from "@/lib/amalgam/amalgam.functions";
 import { downloadReportPdf } from "@/lib/pdf-export";
+import { useLang, langName } from "@/lib/i18n";
 
 interface Msg { role: "user" | "assistant"; content: string; }
 
 export function ReflectPanel() {
   const fn = useServerFn(reflect);
+  const { lang, t } = useLang();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,46 +23,47 @@ export function ReflectPanel() {
     const next: Msg[] = [...messages, { role: "user", content: text }];
     setMessages(next); setInput(""); setLoading(true); setErr(null);
     try {
-      const r = await fn({ data: { messages: next } });
+      const r = await fn({ data: { messages: next, lang: langName(lang) } });
       if (!r) throw new Error("Empty response");
       setMessages([...next, { role: "assistant", content: r.text }]);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Something went wrong.");
+      setErr(e instanceof Error ? e.message : t("Something went wrong.", "Algo salió mal."));
     } finally { setLoading(false); }
   };
 
   return (
     <div className="max-w-3xl mx-auto">
       <p className="text-center text-sm text-muted mb-4 max-w-md mx-auto">
-        Describe a situation, a tension, a state. The interpreter reads its structure and responds from the geometry — not from advice.
+        {t("Describe a situation, a tension, a state. The interpreter reads its structure and responds from the geometry — not from advice.",
+           "Describe una situación, una tensión, un estado. El intérprete lee su estructura y responde desde la geometría — no desde el consejo.")}
       </p>
       {messages.length > 0 && (
         <div className="flex justify-end mb-3">
           <button
             onClick={() => downloadReportPdf({
-              title: "Reflect — interpreter session",
-              subtitle: `${messages.length} exchange${messages.length === 1 ? "" : "s"}`,
+              title: t("Reflect — interpreter session", "Reflexión — sesión del intérprete"),
+              subtitle: `${messages.length} ${messages.length === 1 ? t("exchange", "intercambio") : t("exchanges", "intercambios")}`,
               filename: `reflect-session-${Date.now()}.pdf`,
               sections: messages.map(m => ({
-                heading: m.role === "user" ? "You" : "Interpreter",
+                heading: m.role === "user" ? t("You", "Tú") : t("Interpreter", "Intérprete"),
                 body: m.content,
               })),
             })}
             className="text-[10px] uppercase tracking-[0.25em] px-4 py-2 border border-accent-gold/40 text-accent-gold rounded hover:bg-accent-gold/10 transition-colors"
           >
-            ↓ Download PDF
+            ↓ {t("Download PDF", "Descargar PDF")}
           </button>
         </div>
       )}
 
       <div className="min-h-[400px] bg-white/[0.02] border border-border rounded-3xl p-6 space-y-4 mb-4">
         {messages.length === 0 && (
-          <div className="text-center text-muted/60 text-sm font-mono py-16">◈ waiting for input</div>
+          <div className="text-center text-muted/60 text-sm font-mono py-16">◈ {t("waiting for input", "esperando entrada")}</div>
         )}
         {messages.map((m, i) => (
           <div key={i} className={`max-w-[85%] ${m.role === "user" ? "ml-auto" : ""}`}>
             <div className={`text-[10px] uppercase tracking-[0.2em] mb-1 ${m.role === "user" ? "text-accent-cyan text-right" : "text-accent-gold"}`}>
-              {m.role === "user" ? "you" : "interpreter"}
+              {m.role === "user" ? t("you", "tú") : t("interpreter", "intérprete")}
             </div>
             <div className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${m.role === "user" ? "bg-accent-cyan/10 border border-accent-cyan/20" : "bg-white/[0.04] border border-white/10"}`}>
               <FormattedMessage text={m.content} />
@@ -69,9 +72,9 @@ export function ReflectPanel() {
         ))}
         {loading && (
           <div className="max-w-[85%]">
-            <div className="text-[10px] uppercase tracking-[0.2em] mb-1 text-accent-gold">interpreter</div>
+            <div className="text-[10px] uppercase tracking-[0.2em] mb-1 text-accent-gold">{t("interpreter", "intérprete")}</div>
             <div className="rounded-2xl px-4 py-3 text-sm font-mono text-muted bg-white/[0.04] border border-white/10">
-              ◌ reading structure…
+              ◌ {t("reading structure…", "leyendo estructura…")}
             </div>
           </div>
         )}
@@ -88,7 +91,7 @@ export function ReflectPanel() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder="What's the situation?"
+          placeholder={t("What's the situation?", "¿Cuál es la situación?")}
           className="w-full bg-white/5 border border-white/10 rounded-2xl pl-5 pr-20 py-4 text-sm focus:outline-none focus:border-accent-gold/60 placeholder:text-white/20 resize-none"
         />
         <button

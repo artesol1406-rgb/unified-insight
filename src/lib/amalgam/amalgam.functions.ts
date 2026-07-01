@@ -68,14 +68,18 @@ function toTensionMap(r: z.infer<typeof TensionMapSchema>): Record<string, strin
 
 export const analyzeConcept = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ concept: z.string().min(1).max(200), domain: z.string().min(1).max(40) }).parse(input)
+    z.object({
+      concept: z.string().min(1).max(200),
+      domain: z.string().min(1).max(40),
+      lang: z.enum(["English", "Spanish"]).optional().default("English"),
+    }).parse(input)
   )
   .handler(async ({ data }) => {
     try {
       const gateway = await getGateway();
       const { text } = await generateText({
         model: gateway(MODEL),
-        prompt: VECTOR_PROMPT(data.concept, data.domain),
+        prompt: VECTOR_PROMPT(data.concept, data.domain, data.lang),
       });
       const parsed = ConceptSchema.parse(extractJson(text));
       return {
@@ -95,14 +99,18 @@ const IsoSchema = z.object({
 
 export const compareConcepts = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ a: z.string().min(1).max(200), b: z.string().min(1).max(200) }).parse(input)
+    z.object({
+      a: z.string().min(1).max(200),
+      b: z.string().min(1).max(200),
+      lang: z.enum(["English", "Spanish"]).optional().default("English"),
+    }).parse(input)
   )
   .handler(async ({ data }) => {
     try {
       const gateway = await getGateway();
       const { text } = await generateText({
         model: gateway(MODEL),
-        prompt: ISO_PROMPT(data.a, data.b) +
+        prompt: ISO_PROMPT(data.a, data.b, data.lang) +
           `\n\nRespond ONLY with valid JSON in this exact shape, no prose, no code fences:\n{"A":{"Xi":0.0,"T":0.0,"R":0.0,"E":0.0,"M":0.0,"V":0.0,"S":0.0,"A":0.0,"F":0.0,"phi_e":0.0,"phi_c":0.0},"B":{"Xi":0.0,"T":0.0,"R":0.0,"E":0.0,"M":0.0,"V":0.0,"S":0.0,"A":0.0,"F":0.0,"phi_e":0.0,"phi_c":0.0},"insight":"..."}`,
       });
       const parsed = IsoSchema.parse(extractJson(text));
@@ -172,6 +180,7 @@ export const deepCompare = createServerFn({ method: "POST" })
       aClaim: z.string().min(1).max(4000),
       bClaimant: z.string().min(1).max(120),
       bClaim: z.string().min(1).max(4000),
+      lang: z.enum(["English", "Spanish"]).optional().default("English"),
     }).parse(input)
   )
   .handler(async ({ data }) => {
@@ -179,7 +188,7 @@ export const deepCompare = createServerFn({ method: "POST" })
       const gateway = await getGateway();
       const { text } = await generateText({
         model: gateway(MODEL),
-        prompt: ISO_DEEP_PROMPT(data.aClaimant, data.aClaim, data.bClaimant, data.bClaim),
+        prompt: ISO_DEEP_PROMPT(data.aClaimant, data.aClaim, data.bClaimant, data.bClaim, data.lang),
       });
       const parsed = DeepSchema.parse(extractJson(text));
       return {
@@ -211,6 +220,7 @@ export const reflect = createServerFn({ method: "POST" })
         role: z.enum(["user", "assistant"]),
         content: z.string().min(1).max(4000),
       })).min(1).max(40),
+      lang: z.enum(["English", "Spanish"]).optional().default("English"),
     }).parse(input)
   )
   .handler(async ({ data }) => {
@@ -218,7 +228,7 @@ export const reflect = createServerFn({ method: "POST" })
       const gateway = await getGateway();
       const { text } = await generateText({
         model: gateway(MODEL),
-        system: CHAT_SYSTEM,
+        system: CHAT_SYSTEM(data.lang),
         messages: data.messages,
       });
       return { text };

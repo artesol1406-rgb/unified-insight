@@ -8,6 +8,27 @@ export const DIM_DESC: Record<Dim, string> = {
   'φe':'Fractal expansion','φc':'Fractal contraction',
 };
 
+export const DIM_DESC_ES: Record<Dim, string> = {
+  'Ξ':'Pausa/Silencio','T':'Tensión','R':'Relación','E':'Expansión',
+  'M':'Memoria','V':'Vacío','S':'Sistema','A':'Acción','F':'Foco',
+  'φe':'Expansión fractal','φc':'Contracción fractal',
+};
+
+export const DOMAIN_NAME_ES: Record<string, string> = {
+  physics: 'Física', music: 'Música', psychology: 'Psicología',
+  narrative: 'Narrativa', biology: 'Biología', math: 'Matemáticas',
+  philosophy: 'Filosofía', ecology: 'Ecología',
+  religion: 'Religión', systems: 'Ingeniería de sistemas',
+};
+
+export function dimDesc(d: Dim, lang: 'en' | 'es' = 'en') {
+  return (lang === 'es' ? DIM_DESC_ES : DIM_DESC)[d];
+}
+
+export function domainName(key: string, name: string, lang: 'en' | 'es' = 'en') {
+  return lang === 'es' ? (DOMAIN_NAME_ES[key] ?? name) : name;
+}
+
 export interface Domain {
   name: string;
   icon: string;
@@ -98,17 +119,27 @@ export function translate(vec: Vec, domainKey: string): TranslationItem[] {
     .map(({d, v}) => ({ dim: d, intensity: v, words: dom.vocab[d] || [], desc: DIM_DESC[d] }));
 }
 
-export function makeSentence(translations: TranslationItem[], domainName: string, concept: string, seed = 0): string {
-  if (!translations.length) return `"${concept}" has no clear translation in ${domainName}.`;
-  // deterministic per concept+domain
+export function makeSentence(translations: TranslationItem[], domainName: string, concept: string, seed = 0, lang: 'en' | 'es' = 'en'): string {
+  const L = lang === 'es'
+    ? { none: (c: string, d: string) => `"${c}" no tiene traducción clara en ${d}.`,
+        pending: 'Traducción pendiente.',
+        inDom: (d: string) => `En ${d}`,
+        one: (d: string, a: string) => `En ${d}: ${a}.`,
+        two: (d: string, a: string, b: string) => `En ${d}: ${a} en tensión con ${b}.`,
+        three: (d: string, a: string, b: string, c: string) => `En ${d}: ${a} generando ${b} a través de ${c}.` }
+    : { none: (c: string, d: string) => `"${c}" has no clear translation in ${d}.`,
+        pending: 'Translation pending.',
+        inDom: (d: string) => `In ${d}`,
+        one: (d: string, a: string) => `In ${d}: ${a}.`,
+        two: (d: string, a: string, b: string) => `In ${d}: ${a} in tension with ${b}.`,
+        three: (d: string, a: string, b: string, c: string) => `In ${d}: ${a} generating ${b} through ${c}.` };
+  if (!translations.length) return L.none(concept, domainName);
   const pick = (arr: string[], salt: number) => arr[Math.abs((seed + salt) % arr.length)] || arr[0];
-  const parts = translations.slice(0,3)
-    .map((t, i) => pick(t.words, i))
-    .filter(Boolean);
-  if (!parts.length) return `Translation pending.`;
-  if (parts.length === 1) return `In ${domainName}: ${parts[0]}.`;
-  if (parts.length === 2) return `In ${domainName}: ${parts[0]} in tension with ${parts[1]}.`;
-  return `In ${domainName}: ${parts[0]} generating ${parts[1]} through ${parts[2]}.`;
+  const parts = translations.slice(0,3).map((t, i) => pick(t.words, i)).filter(Boolean);
+  if (!parts.length) return L.pending;
+  if (parts.length === 1) return L.one(domainName, parts[0]);
+  if (parts.length === 2) return L.two(domainName, parts[0], parts[1]);
+  return L.three(domainName, parts[0], parts[1], parts[2]);
 }
 
 export function midpoint(a: Vec, b: Vec): Vec {

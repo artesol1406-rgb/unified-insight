@@ -7,6 +7,7 @@ import {
 } from "@/lib/amalgam/engine";
 import { SignatureChart } from "./SignatureChart";
 import { downloadReportPdf } from "@/lib/pdf-export";
+import { useLang, langName } from "@/lib/i18n";
 
 type Poles = {
   activeSpace: string; receptiveSpace: string;
@@ -37,6 +38,7 @@ type DeepResult = {
 
 export function IsoPanel() {
   const fn = useServerFn(deepCompare);
+  const { lang, t } = useLang();
   const [aClaimant, setAClaimant] = useState("");
   const [aClaim, setAClaim] = useState("");
   const [bClaimant, setBClaimant] = useState("");
@@ -54,10 +56,11 @@ export function IsoPanel() {
       const r = await fn({ data: {
         aClaimant: aClaimant.trim(), aClaim: aClaim.trim(),
         bClaimant: bClaimant.trim(), bClaim: bClaim.trim(),
+        lang: langName(lang),
       }});
       if (!r) throw new Error("Empty response");
       setRes({ ...r, vA: normalize(r.vA), vB: normalize(r.vB), aClaimant: aClaimant.trim(), bClaimant: bClaimant.trim() });
-    } catch (e) { setErr(e instanceof Error ? e.message : "Something went wrong."); }
+    } catch (e) { setErr(e instanceof Error ? e.message : t("Something went wrong.", "Algo salió mal.")); }
     finally { setLoading(false); }
   };
 
@@ -71,16 +74,18 @@ export function IsoPanel() {
       {/* INPUTS */}
       <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
         <SideInput
-          color="#00f5ff" label="Side A" accent="cyan"
+          color="#00f5ff" label={t("Side A", "Lado A")} accent="cyan"
           claimant={aClaimant} setClaimant={setAClaimant}
           claim={aClaim} setClaim={setAClaim}
-          placeholderName="e.g. Maria, the engineer" placeholderClaim="State the claim. Context. The argument behind it."
+          placeholderName={t("e.g. Maria, the engineer", "ej. María, la ingeniera")}
+          placeholderClaim={t("State the claim. Context. The argument behind it.", "Formula la afirmación. Contexto. El argumento detrás.")}
         />
         <SideInput
-          color="#ff00ea" label="Side B" accent="magenta"
+          color="#ff00ea" label={t("Side B", "Lado B")} accent="magenta"
           claimant={bClaimant} setClaimant={setBClaimant}
           claim={bClaim} setClaim={setBClaim}
-          placeholderName="e.g. Jonas, the operator" placeholderClaim="State the opposing claim. Context. The argument behind it."
+          placeholderName={t("e.g. Jonas, the operator", "ej. Jonás, el operador")}
+          placeholderClaim={t("State the opposing claim. Context. The argument behind it.", "Formula la afirmación opuesta. Contexto. El argumento detrás.")}
         />
       </div>
       <div className="max-w-6xl mx-auto">
@@ -89,7 +94,7 @@ export function IsoPanel() {
           disabled={loading || !ready}
           className="block mx-auto px-10 py-3 bg-accent-gold text-background font-semibold rounded-xl hover:bg-accent-gold/90 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          {loading ? "Reading the structure…" : "Read the tensions"}
+          {loading ? t("Reading the structure…", "Leyendo la estructura…") : t("Read the tensions", "Leer las tensiones")}
         </button>
         {err && (
           <div className="mt-6 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">{err}</div>
@@ -102,39 +107,39 @@ export function IsoPanel() {
             <button
               onClick={() => downloadReportPdf({
                 title: `${res.aClaimant}  ↔  ${res.bClaimant}`,
-                subtitle: `τ = ${dist.toFixed(3)} rad · ${Math.round(sim * 100)}% resonance${meta ? ` · metaestabilidad ${meta.tag} (${meta.label})` : ""}`,
+                subtitle: `τ = ${dist.toFixed(3)} rad · ${Math.round(sim * 100)}% ${t("resonance", "resonancia")}${meta ? ` · ${t("metastability", "metaestabilidad")} ${meta.tag} (${meta.label})` : ""}`,
                 filename: `iso-${res.aClaimant}-vs-${res.bClaimant}.pdf`.replace(/\s+/g, "-").toLowerCase(),
                 crystals: [
                   { vec: res.vA, signature: signedSignature(res.vA, res.signsA), label: res.aClaimant, accent: [0, 245, 255] },
-                  ...(third ? [{ vec: third, signature: `1+1=3`, label: "The third", accent: [255, 207, 125] as [number, number, number] }] : []),
+                  ...(third ? [{ vec: third, signature: `1+1=3`, label: t("The third", "El tercero"), accent: [255, 207, 125] as [number, number, number] }] : []),
                   { vec: res.vB, signature: signedSignature(res.vB, res.signsB), label: res.bClaimant, accent: [255, 0, 234] },
                 ],
                 sections: [
                   { heading: res.aClaimant, subheading: signedSignature(res.vA, res.signsA), body: res.tensionsA },
                   { heading: res.bClaimant, subheading: signedSignature(res.vB, res.signsB), body: res.tensionsB },
-                  { heading: "Polarity core", body: res.polarityCore },
-                  { heading: "Polar pairs detected", body: res.polarityPairs.map(p => `${p.labelA}  ↔  ${p.labelB}   (${p.dim})`).join("\n") },
-                  { heading: `${res.aClaimant} — poles`, body:
-                    `active · space:     ${res.polesA.activeSpace}\nactive · time:      ${res.polesA.activeTime}\nreceptive · space:  ${res.polesA.receptiveSpace}\nreceptive · time:   ${res.polesA.receptiveTime}\ndynamic · space:    ${res.polesA.dynamicSpace}\ndynamic · time:     ${res.polesA.dynamicTime}\nstatic · space:     ${res.polesA.staticSpace}\nstatic · time:      ${res.polesA.staticTime}` },
-                  { heading: `${res.bClaimant} — poles`, body:
-                    `active · space:     ${res.polesB.activeSpace}\nactive · time:      ${res.polesB.activeTime}\nreceptive · space:  ${res.polesB.receptiveSpace}\nreceptive · time:   ${res.polesB.receptiveTime}\ndynamic · space:    ${res.polesB.dynamicSpace}\ndynamic · time:     ${res.polesB.dynamicTime}\nstatic · space:     ${res.polesB.staticSpace}\nstatic · time:      ${res.polesB.staticTime}` },
-                  { heading: "Matrix of polar tensions", subheading: "From SPACE", body: res.matrix.spaceTension },
-                  { subheading: "From TIME", body: res.matrix.timeTension },
-                  { heading: "Isomorphisms across extremes",
-                    body: `Pure active:     ${res.isomorphisms.activeExtreme}\n\nPure receptive:  ${res.isomorphisms.receptiveExtreme}\n\nPure dynamic:    ${res.isomorphisms.dynamicExtreme}\n\nPure static:     ${res.isomorphisms.staticExtreme}` },
-                  { heading: "Same polarity, other systems",
+                  { heading: t("Polarity core", "Núcleo de polaridad"), body: res.polarityCore },
+                  { heading: t("Polar pairs detected", "Pares polares detectados"), body: res.polarityPairs.map(p => `${p.labelA}  ↔  ${p.labelB}   (${p.dim})`).join("\n") },
+                  { heading: `${res.aClaimant} — ${t("poles", "polos")}`, body:
+                    `${t("active", "activo")} · ${t("space", "espacio")}:     ${res.polesA.activeSpace}\n${t("active", "activo")} · ${t("time", "tiempo")}:      ${res.polesA.activeTime}\n${t("receptive", "receptivo")} · ${t("space", "espacio")}:  ${res.polesA.receptiveSpace}\n${t("receptive", "receptivo")} · ${t("time", "tiempo")}:   ${res.polesA.receptiveTime}\n${t("dynamic", "dinámico")} · ${t("space", "espacio")}:    ${res.polesA.dynamicSpace}\n${t("dynamic", "dinámico")} · ${t("time", "tiempo")}:     ${res.polesA.dynamicTime}\n${t("static", "estático")} · ${t("space", "espacio")}:     ${res.polesA.staticSpace}\n${t("static", "estático")} · ${t("time", "tiempo")}:      ${res.polesA.staticTime}` },
+                  { heading: `${res.bClaimant} — ${t("poles", "polos")}`, body:
+                    `${t("active", "activo")} · ${t("space", "espacio")}:     ${res.polesB.activeSpace}\n${t("active", "activo")} · ${t("time", "tiempo")}:      ${res.polesB.activeTime}\n${t("receptive", "receptivo")} · ${t("space", "espacio")}:  ${res.polesB.receptiveSpace}\n${t("receptive", "receptivo")} · ${t("time", "tiempo")}:   ${res.polesB.receptiveTime}\n${t("dynamic", "dinámico")} · ${t("space", "espacio")}:    ${res.polesB.dynamicSpace}\n${t("dynamic", "dinámico")} · ${t("time", "tiempo")}:     ${res.polesB.dynamicTime}\n${t("static", "estático")} · ${t("space", "espacio")}:     ${res.polesB.staticSpace}\n${t("static", "estático")} · ${t("time", "tiempo")}:      ${res.polesB.staticTime}` },
+                  { heading: t("Matrix of polar tensions", "Matriz de tensiones polares"), subheading: t("From SPACE", "Desde el ESPACIO"), body: res.matrix.spaceTension },
+                  { subheading: t("From TIME", "Desde el TIEMPO"), body: res.matrix.timeTension },
+                  { heading: t("Isomorphisms across extremes", "Isomorfismos entre extremos"),
+                    body: `${t("Pure active", "Activo puro")}:     ${res.isomorphisms.activeExtreme}\n\n${t("Pure receptive", "Receptivo puro")}:  ${res.isomorphisms.receptiveExtreme}\n\n${t("Pure dynamic", "Dinámico puro")}:    ${res.isomorphisms.dynamicExtreme}\n\n${t("Pure static", "Estático puro")}:     ${res.isomorphisms.staticExtreme}` },
+                  { heading: t("Same polarity, other systems", "Misma polaridad, otros sistemas"),
                     body: res.analogues.map(a => `${a.system}\n${a.mapping}`).join("\n\n") },
-                  { heading: "Three layers", subheading: "Concrete · the actual situation", body: res.layers.concrete },
-                  { subheading: "Human · emotion & subjectivity", body: res.layers.human },
-                  { subheading: "Amalgam · holographic tension map", body: res.layers.amalgam },
-                  { heading: "Puente · bridge", body: res.bridge },
-                  { heading: "Necessity report", body: res.necessity },
-                  { heading: "Camino amor · minimum coherent next step", body: res.caminoAmor },
+                  { heading: t("Three layers", "Tres capas"), subheading: t("Concrete · the actual situation", "Concreta · la situación real"), body: res.layers.concrete },
+                  { subheading: t("Human · emotion & subjectivity", "Humana · emoción y subjetividad"), body: res.layers.human },
+                  { subheading: t("Amalgam · holographic tension map", "Amalgama · mapa de tensión holográfico"), body: res.layers.amalgam },
+                  { heading: t("Bridge", "Puente"), body: res.bridge },
+                  { heading: t("Necessity report", "Reporte de necesidad"), body: res.necessity },
+                  { heading: t("Camino amor · minimum coherent next step", "Camino amor · mínimo paso coherente siguiente"), body: res.caminoAmor },
                 ],
               })}
               className="text-[10px] uppercase tracking-[0.25em] px-4 py-2 border border-accent-gold/40 text-accent-gold rounded hover:bg-accent-gold/10 transition-colors"
             >
-              ↓ Download PDF
+              ↓ {t("Download PDF", "Descargar PDF")}
             </button>
           </div>
           {/* SIGNATURES + THIRD */}
@@ -145,12 +150,12 @@ export function IsoPanel() {
               vec={res.vA} color="#00f5ff" tensions={res.tensionsA}
             />
             <div className="bg-gradient-to-b from-accent-gold/10 via-white/[0.04] to-accent-gold/10 border border-accent-gold/30 rounded-3xl p-6 flex flex-col items-center text-center">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-2">The third</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-2">{t("The third", "El tercero")}</div>
               <div className="font-display font-black text-5xl mb-1">1<span className="text-accent-cyan">+</span>1<span className="text-accent-magenta">=</span><span className="text-accent-gold">3</span></div>
-              <div className="font-mono text-[10px] text-muted mb-1">τ = {dist.toFixed(3)} rad · {Math.round(sim * 100)}% resonance</div>
+              <div className="font-mono text-[10px] text-muted mb-1">τ = {dist.toFixed(3)} rad · {Math.round(sim * 100)}% {t("resonance", "resonancia")}</div>
               {meta && (
                 <div className="font-mono text-[10px] text-accent-gold mb-3">
-                  metaestabilidad · <span className="text-base align-middle">{meta.tag}</span> <span className="text-muted">({meta.label})</span>
+                  {t("metastability", "metaestabilidad")} · <span className="text-base align-middle">{meta.tag}</span> <span className="text-muted">({meta.label})</span>
                 </div>
               )}
               {third && <SignatureChart vec={third} size={220} color="#ffcf7d" />}
@@ -164,7 +169,7 @@ export function IsoPanel() {
           </div>
 
           {/* POLARITY PAIRS detected */}
-          <Section title="Polar pairs detected" subtitle="The opposites this situation is actually made of">
+          <Section title={t("Polar pairs detected", "Pares polares detectados")} subtitle={t("The opposites this situation is actually made of", "Los opuestos que realmente componen esta situación")}>
             <div className="flex flex-wrap gap-2">
               {res.polarityPairs.map((p, i) => (
                 <div key={i} className="bg-white/[0.04] border border-white/10 rounded-full pl-1 pr-3 py-1 flex items-center gap-2 text-sm">
@@ -184,25 +189,25 @@ export function IsoPanel() {
           </div>
 
           {/* SPACE/TIME TENSION MATRIX */}
-          <Section title="Matrix of polar tensions" subtitle="A ↔ B viewed from space and from time">
+          <Section title={t("Matrix of polar tensions", "Matriz de tensiones polares")} subtitle={t("A ↔ B viewed from space and from time", "A ↔ B visto desde el espacio y desde el tiempo")}>
             <div className="grid md:grid-cols-2 gap-4">
-              <MatrixCell label="From SPACE" body={res.matrix.spaceTension} accent="text-accent-cyan" />
-              <MatrixCell label="From TIME" body={res.matrix.timeTension} accent="text-accent-magenta" />
+              <MatrixCell label={t("From SPACE", "Desde el ESPACIO")} body={res.matrix.spaceTension} accent="text-accent-cyan" />
+              <MatrixCell label={t("From TIME", "Desde el TIEMPO")} body={res.matrix.timeTension} accent="text-accent-magenta" />
             </div>
           </Section>
 
           {/* ISOMORPHISMS */}
-          <Section title="Isomorphisms across extremes" subtitle="Both sides read from one polar extreme at a time">
+          <Section title={t("Isomorphisms across extremes", "Isomorfismos entre extremos")} subtitle={t("Both sides read from one polar extreme at a time", "Ambos lados leídos desde un extremo polar a la vez")}>
             <div className="grid md:grid-cols-2 gap-4">
-              <IsoCell label="Pure active" body={res.isomorphisms.activeExtreme} />
-              <IsoCell label="Pure receptive" body={res.isomorphisms.receptiveExtreme} />
-              <IsoCell label="Pure dynamic" body={res.isomorphisms.dynamicExtreme} />
-              <IsoCell label="Pure static" body={res.isomorphisms.staticExtreme} />
+              <IsoCell label={t("Pure active", "Activo puro")} body={res.isomorphisms.activeExtreme} />
+              <IsoCell label={t("Pure receptive", "Receptivo puro")} body={res.isomorphisms.receptiveExtreme} />
+              <IsoCell label={t("Pure dynamic", "Dinámico puro")} body={res.isomorphisms.dynamicExtreme} />
+              <IsoCell label={t("Pure static", "Estático puro")} body={res.isomorphisms.staticExtreme} />
             </div>
           </Section>
 
           {/* ANALOGUES */}
-          <Section title="Same polarity, other systems" subtitle="Isomorphic structures elsewhere">
+          <Section title={t("Same polarity, other systems", "Misma polaridad, otros sistemas")} subtitle={t("Isomorphic structures elsewhere", "Estructuras isomórficas en otros lugares")}>
             <div className="grid md:grid-cols-3 gap-4">
               {res.analogues.map((a, i) => (
                 <div key={i} className="bg-white/[0.03] border border-white/10 rounded-2xl p-5">
@@ -214,28 +219,28 @@ export function IsoPanel() {
           </Section>
 
           {/* THREE LAYERS */}
-          <Section title="Three layers" subtitle="Concreta · Humana · Amalgam">
+          <Section title={t("Three layers", "Tres capas")} subtitle={t("Concrete · Human · Amalgam", "Concreta · Humana · Amalgama")}>
             <div className="grid md:grid-cols-3 gap-4">
-              <LayerCard label="Concrete" sub="the actual situation" body={res.layers.concrete} ring="border-accent-cyan/30" />
-              <LayerCard label="Human" sub="emotion & subjectivity" body={res.layers.human} ring="border-accent-magenta/30" />
-              <LayerCard label="Amalgam" sub="holographic tension map" body={res.layers.amalgam} ring="border-accent-gold/40" />
+              <LayerCard label={t("Concrete", "Concreta")} sub={t("the actual situation", "la situación real")} body={res.layers.concrete} ring="border-accent-cyan/30" />
+              <LayerCard label={t("Human", "Humana")} sub={t("emotion & subjectivity", "emoción y subjetividad")} body={res.layers.human} ring="border-accent-magenta/30" />
+              <LayerCard label={t("Amalgam", "Amalgama")} sub={t("holographic tension map", "mapa de tensión holográfico")} body={res.layers.amalgam} ring="border-accent-gold/40" />
             </div>
           </Section>
 
           {/* BRIDGE */}
           <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Puente · bridge</div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">{t("Bridge", "Puente")}</div>
             <p className="font-serif italic text-xl text-foreground/95 leading-snug">{res.bridge}</p>
           </div>
 
           {/* NECESSITY + CAMINO AMOR */}
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Necessity report</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">{t("Necessity report", "Reporte de necesidad")}</div>
               <p className="text-base text-foreground/90 leading-relaxed">{res.necessity}</p>
             </div>
             <div className="bg-gradient-to-br from-accent-gold/15 to-transparent border border-accent-gold/40 rounded-3xl p-6">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">Camino amor · minimum coherent next step</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">{t("Camino amor · minimum coherent next step", "Camino amor · mínimo paso coherente siguiente")}</div>
               <p className="font-serif italic text-xl text-foreground leading-snug">{res.caminoAmor}</p>
             </div>
           </div>
@@ -278,9 +283,10 @@ function SideInput({
 }
 
 function PoleCard({ label, sig, vec, color, tensions }: { label: string; sig: string; vec: Vec; color: string; tensions: string }) {
+  const { t } = useLang();
   return (
     <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6 flex flex-col items-center">
-      <div className="text-[10px] uppercase tracking-[0.3em] mb-1" style={{ color }}>Side</div>
+      <div className="text-[10px] uppercase tracking-[0.3em] mb-1" style={{ color }}>{t("Side", "Lado")}</div>
       <div className="font-serif italic text-2xl mb-1 text-center">{label}</div>
       <div className="font-mono text-[11px] text-muted mb-4">{sig}</div>
       <SignatureChart vec={vec} size={220} color={color} />
@@ -290,30 +296,34 @@ function PoleCard({ label, sig, vec, color, tensions }: { label: string; sig: st
 }
 
 function PoleMatrix({ title, color, poles }: { title: string; color: string; poles: Poles }) {
+  const { t } = useLang();
   const Cell = ({ label, value }: { label: string; value: string }) => (
     <div className="bg-white/[0.02] border border-white/10 rounded-xl p-3">
       <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-muted mb-1">{label}</div>
       <div className="text-xs leading-snug text-foreground/85">{value}</div>
     </div>
   );
+  const sp = t("space", "espacio"), ti = t("time", "tiempo");
+  const ac = t("active", "activo"), rc = t("receptive", "receptivo");
+  const dy = t("dynamic", "dinámico"), st = t("static", "estático");
   return (
     <div className="bg-white/[0.02] border border-white/10 rounded-3xl p-5">
       <div className="flex items-center gap-2 mb-4">
         <span className="inline-block w-2 h-2 rounded-full" style={{ background: color }} />
         <span className="font-serif italic text-lg">{title}</span>
-        <span className="ml-auto text-[10px] uppercase tracking-[0.25em] text-muted">poles</span>
+        <span className="ml-auto text-[10px] uppercase tracking-[0.25em] text-muted">{t("poles", "polos")}</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-cyan">— space —</div>
-        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-magenta">— time —</div>
-        <Cell label="active · space" value={poles.activeSpace} />
-        <Cell label="active · time" value={poles.activeTime} />
-        <Cell label="receptive · space" value={poles.receptiveSpace} />
-        <Cell label="receptive · time" value={poles.receptiveTime} />
-        <Cell label="dynamic · space" value={poles.dynamicSpace} />
-        <Cell label="dynamic · time" value={poles.dynamicTime} />
-        <Cell label="static · space" value={poles.staticSpace} />
-        <Cell label="static · time" value={poles.staticTime} />
+        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-cyan">— {sp} —</div>
+        <div className="text-[10px] uppercase tracking-[0.25em] text-accent-magenta">— {ti} —</div>
+        <Cell label={`${ac} · ${sp}`} value={poles.activeSpace} />
+        <Cell label={`${ac} · ${ti}`} value={poles.activeTime} />
+        <Cell label={`${rc} · ${sp}`} value={poles.receptiveSpace} />
+        <Cell label={`${rc} · ${ti}`} value={poles.receptiveTime} />
+        <Cell label={`${dy} · ${sp}`} value={poles.dynamicSpace} />
+        <Cell label={`${dy} · ${ti}`} value={poles.dynamicTime} />
+        <Cell label={`${st} · ${sp}`} value={poles.staticSpace} />
+        <Cell label={`${st} · ${ti}`} value={poles.staticTime} />
       </div>
     </div>
   );

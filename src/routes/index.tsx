@@ -4,6 +4,7 @@ import { IntroAnimation } from "@/components/IntroAnimation";
 import { RosettaPanel } from "@/components/RosettaPanel";
 import { IsoPanel } from "@/components/IsoPanel";
 import { ReflectPanel } from "@/components/ReflectPanel";
+import { useLang, type Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -22,6 +23,7 @@ type Mode = "rosetta" | "iso" | "reflect";
 function Page() {
   const [introDone, setIntroDone] = useState(false);
   const [mode, setMode] = useState<Mode>("rosetta");
+  const { t } = useLang();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -43,8 +45,11 @@ function Page() {
           1<span className="text-accent-cyan">+</span>1<span className="font-serif italic font-normal text-accent-magenta">=</span><span className="text-accent-gold">3</span>
         </div>
         <ModeSwitcher mode={mode} setMode={setMode} />
-        <div className="hidden sm:block font-mono text-[10px] uppercase tracking-widest text-accent-gold/60">
-          Σ · v1.0
+        <div className="flex items-center gap-3">
+          <LanguageToggle />
+          <div className="hidden sm:block font-mono text-[10px] uppercase tracking-widest text-accent-gold/60">
+            Σ · v1.0
+          </div>
         </div>
       </nav>
 
@@ -60,20 +65,22 @@ function Page() {
 
         <div className="relative z-10 space-y-6 max-w-3xl animate-[intro-assemble_1s_var(--ease-out-expo)_both]">
           <div className="inline-block px-3 py-1 border border-accent-gold/30 rounded-full text-[10px] uppercase tracking-[0.3em] text-accent-gold">
-            The end of duality
+            {t("The end of duality", "El fin de la dualidad")}
           </div>
           <h1 className="text-7xl md:text-9xl font-display font-black tracking-tighter text-balance">
             1+1<span className="italic font-serif font-normal text-accent-gold">=</span>3
           </h1>
           <p className="text-muted max-w-xl mx-auto text-base md:text-lg leading-relaxed text-pretty">
-            The universal interpreter. Map any concept into 11-dimensional polarity space —
-            then watch two poles become a third, emergent thing.
+            {t(
+              "The universal interpreter. Map any concept into 11-dimensional polarity space — then watch two poles become a third, emergent thing.",
+              "El intérprete universal. Proyecta cualquier concepto en un espacio de polaridad de 11 dimensiones — y observa cómo dos polos se convierten en un tercero emergente."
+            )}
           </p>
         </div>
 
         <div className="relative z-10 mt-12 font-mono text-[10px] uppercase tracking-[0.3em] text-muted/60 flex items-center gap-2">
           <span className="size-1.5 rounded-full bg-accent-cyan animate-pulse" />
-          scroll to interpret
+          {t("scroll to interpret", "desplázate para interpretar")}
         </div>
       </header>
 
@@ -81,12 +88,12 @@ function Page() {
       <section id="instrument" className="px-6 pb-32 max-w-7xl mx-auto">
         <div className="mb-12 text-center">
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted mb-2">
-            mode · {mode}
+            {t("mode", "modo")} · {mode}
           </div>
           <h2 className="font-serif italic text-3xl text-foreground/90">
-            {mode === "rosetta" && "Translate one concept across every domain"}
-            {mode === "iso" && "Compare two concepts — find the third"}
-            {mode === "reflect" && "Reflect from the structure of the situation"}
+            {mode === "rosetta" && t("Translate one concept across every domain", "Traduce un concepto a través de todos los dominios")}
+            {mode === "iso" && t("Compare two concepts — find the third", "Compara dos concepciones — encuentra el tercero")}
+            {mode === "reflect" && t("Reflect from the structure of the situation", "Reflexiona desde la estructura de la situación")}
           </h2>
         </div>
 
@@ -99,10 +106,10 @@ function Page() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
             <div className="size-2 rounded-full bg-accent-cyan animate-pulse" />
-            <div className="font-mono text-[10px] uppercase tracking-widest text-muted">system operational</div>
+            <div className="font-mono text-[10px] uppercase tracking-widest text-muted">{t("system operational", "sistema operativo")}</div>
           </div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted/60 text-center">
-            Two poles in tension produce a third, emergent thing.
+            {t("Two poles in tension produce a third, emergent thing.", "Dos polos en tensión producen un tercero, emergente.")}
           </p>
           <div className="font-mono text-[10px] uppercase tracking-widest text-accent-gold/60">Ξ T R E M V S A F φe φc</div>
         </div>
@@ -114,20 +121,42 @@ function Page() {
             className="inline-flex items-center gap-2 px-5 py-2.5 border border-accent-cyan/40 rounded-full text-xs font-medium text-accent-cyan hover:bg-accent-cyan hover:text-black transition-colors"
           >
             <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden="true"><path d="M9.04 15.47 8.7 20.2c.48 0 .69-.2.94-.45l2.26-2.16 4.69 3.42c.86.47 1.47.22 1.7-.79l3.08-14.43h.01c.27-1.26-.45-1.75-1.29-1.44L2.2 9.94c-1.23.48-1.21 1.17-.21 1.48l4.66 1.45 10.83-6.82c.51-.32.97-.14.59.18z"/></svg>
-            Contact @Keiserdom on Telegram
+            {t("Contact @Keiserdom on Telegram", "Contactar a @Keiserdom en Telegram")}
           </a>
         </div>
-
       </footer>
     </div>
   );
 }
 
+function LanguageToggle() {
+  const { lang, setLang } = useLang();
+  const opts: Array<{ id: Lang; label: string }> = [
+    { id: "en", label: "EN" },
+    { id: "es", label: "ES" },
+  ];
+  return (
+    <div className="flex bg-white/5 p-0.5 rounded-full border border-border">
+      {opts.map((o) => (
+        <button
+          key={o.id}
+          onClick={() => setLang(o.id)}
+          className={`px-2.5 py-1 rounded-full text-[10px] font-mono tracking-wider transition-colors ${lang === o.id ? "bg-accent-gold text-background" : "text-muted hover:text-foreground"}`}
+          aria-pressed={lang === o.id}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ModeSwitcher({ mode, setMode }: { mode: Mode; setMode: (m: Mode) => void }) {
+  const { t } = useLang();
   const opts: Array<{ id: Mode; label: string }> = [
-    { id: "rosetta", label: "Translate" },
-    { id: "iso", label: "Compare" },
-    { id: "reflect", label: "Reflect" },
+    { id: "rosetta", label: t("Translate", "Traducir") },
+    { id: "iso", label: t("Compare", "Comparar") },
+    { id: "reflect", label: t("Reflect", "Reflexionar") },
   ];
   const scrollToInstrument = (m: Mode) => {
     setMode(m);

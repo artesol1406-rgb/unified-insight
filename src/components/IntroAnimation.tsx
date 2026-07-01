@@ -236,7 +236,9 @@ export function IntroAnimation({ onDone }: { onDone: () => void }) {
     >
       <canvas ref={canvasRef} className="w-full h-full" />
       <div className="absolute bottom-8 left-0 right-0 text-center font-mono text-[10px] uppercase tracking-[0.3em] text-muted/60">
-        Click or press Esc to skip
+        {typeof navigator !== "undefined" && (localStorage.getItem("lang") === "es" || (localStorage.getItem("lang") == null && navigator.language?.toLowerCase().startsWith("es")))
+          ? "Haz clic o pulsa Esc para omitir"
+          : "Click or press Esc to skip"}
       </div>
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none mix-blend-screen">
         <div className="font-display font-black text-3xl tracking-tighter text-foreground/0 animate-[pulse-shimmer_2s_ease-in-out_infinite]">

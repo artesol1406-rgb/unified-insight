@@ -189,25 +189,25 @@ export function IsoPanel() {
           </div>
 
           {/* SPACE/TIME TENSION MATRIX */}
-          <Section title="Matrix of polar tensions" subtitle="A ↔ B viewed from space and from time">
+          <Section title={t("Matrix of polar tensions", "Matriz de tensiones polares")} subtitle={t("A ↔ B viewed from space and from time", "A ↔ B visto desde el espacio y desde el tiempo")}>
             <div className="grid md:grid-cols-2 gap-4">
-              <MatrixCell label="From SPACE" body={res.matrix.spaceTension} accent="text-accent-cyan" />
-              <MatrixCell label="From TIME" body={res.matrix.timeTension} accent="text-accent-magenta" />
+              <MatrixCell label={t("From SPACE", "Desde el ESPACIO")} body={res.matrix.spaceTension} accent="text-accent-cyan" />
+              <MatrixCell label={t("From TIME", "Desde el TIEMPO")} body={res.matrix.timeTension} accent="text-accent-magenta" />
             </div>
           </Section>
 
           {/* ISOMORPHISMS */}
-          <Section title="Isomorphisms across extremes" subtitle="Both sides read from one polar extreme at a time">
+          <Section title={t("Isomorphisms across extremes", "Isomorfismos entre extremos")} subtitle={t("Both sides read from one polar extreme at a time", "Ambos lados leídos desde un extremo polar a la vez")}>
             <div className="grid md:grid-cols-2 gap-4">
-              <IsoCell label="Pure active" body={res.isomorphisms.activeExtreme} />
-              <IsoCell label="Pure receptive" body={res.isomorphisms.receptiveExtreme} />
-              <IsoCell label="Pure dynamic" body={res.isomorphisms.dynamicExtreme} />
-              <IsoCell label="Pure static" body={res.isomorphisms.staticExtreme} />
+              <IsoCell label={t("Pure active", "Activo puro")} body={res.isomorphisms.activeExtreme} />
+              <IsoCell label={t("Pure receptive", "Receptivo puro")} body={res.isomorphisms.receptiveExtreme} />
+              <IsoCell label={t("Pure dynamic", "Dinámico puro")} body={res.isomorphisms.dynamicExtreme} />
+              <IsoCell label={t("Pure static", "Estático puro")} body={res.isomorphisms.staticExtreme} />
             </div>
           </Section>
 
           {/* ANALOGUES */}
-          <Section title="Same polarity, other systems" subtitle="Isomorphic structures elsewhere">
+          <Section title={t("Same polarity, other systems", "Misma polaridad, otros sistemas")} subtitle={t("Isomorphic structures elsewhere", "Estructuras isomórficas en otros lugares")}>
             <div className="grid md:grid-cols-3 gap-4">
               {res.analogues.map((a, i) => (
                 <div key={i} className="bg-white/[0.03] border border-white/10 rounded-2xl p-5">
@@ -219,28 +219,28 @@ export function IsoPanel() {
           </Section>
 
           {/* THREE LAYERS */}
-          <Section title="Three layers" subtitle="Concreta · Humana · Amalgam">
+          <Section title={t("Three layers", "Tres capas")} subtitle={t("Concrete · Human · Amalgam", "Concreta · Humana · Amalgama")}>
             <div className="grid md:grid-cols-3 gap-4">
-              <LayerCard label="Concrete" sub="the actual situation" body={res.layers.concrete} ring="border-accent-cyan/30" />
-              <LayerCard label="Human" sub="emotion & subjectivity" body={res.layers.human} ring="border-accent-magenta/30" />
-              <LayerCard label="Amalgam" sub="holographic tension map" body={res.layers.amalgam} ring="border-accent-gold/40" />
+              <LayerCard label={t("Concrete", "Concreta")} sub={t("the actual situation", "la situación real")} body={res.layers.concrete} ring="border-accent-cyan/30" />
+              <LayerCard label={t("Human", "Humana")} sub={t("emotion & subjectivity", "emoción y subjetividad")} body={res.layers.human} ring="border-accent-magenta/30" />
+              <LayerCard label={t("Amalgam", "Amalgama")} sub={t("holographic tension map", "mapa de tensión holográfico")} body={res.layers.amalgam} ring="border-accent-gold/40" />
             </div>
           </Section>
 
           {/* BRIDGE */}
           <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6">
-            <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Puente · bridge</div>
+            <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">{t("Bridge", "Puente")}</div>
             <p className="font-serif italic text-xl text-foreground/95 leading-snug">{res.bridge}</p>
           </div>
 
           {/* NECESSITY + CAMINO AMOR */}
           <div className="grid lg:grid-cols-2 gap-6">
             <div className="bg-white/[0.03] border border-white/10 rounded-3xl p-6">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">Necessity report</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted mb-3">{t("Necessity report", "Reporte de necesidad")}</div>
               <p className="text-base text-foreground/90 leading-relaxed">{res.necessity}</p>
             </div>
             <div className="bg-gradient-to-br from-accent-gold/15 to-transparent border border-accent-gold/40 rounded-3xl p-6">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">Camino amor · minimum coherent next step</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-accent-gold mb-3">{t("Camino amor · minimum coherent next step", "Camino amor · mínimo paso coherente siguiente")}</div>
               <p className="font-serif italic text-xl text-foreground leading-snug">{res.caminoAmor}</p>
             </div>
           </div>

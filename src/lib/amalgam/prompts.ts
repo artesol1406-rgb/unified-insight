@@ -1,4 +1,9 @@
-export const VECTOR_PROMPT = (concept: string, domain: string) => `You are the mathematical core of the 1+1=3 universal interpreter.
+const langLine = (lang: string) =>
+  lang === "Spanish"
+    ? `\n\nIMPORTANTE: Todo el contenido en lenguaje natural (explicaciones, oraciones, etiquetas de polos, notas, capas, puente, necesidad, camino amor, etc.) DEBE estar escrito en ESPAÑOL. Las claves JSON, símbolos Σ (Ξ, T, R, E, M, V, S, A, F, φe, φc) y etiquetas dimensionales técnicas se mantienen igual.`
+    : `\n\nIMPORTANT: All natural-language content must be written in ENGLISH.`;
+
+export const VECTOR_PROMPT = (concept: string, domain: string, lang: string = "English") => `You are the mathematical core of the 1+1=3 universal interpreter.
 
 Project the given concept into an 11-dimensional space (Σ) — the "crystal of tension".
 Each dimension holds a real value in [0.0, 1.0] indicating its intensity in the concept.
@@ -43,9 +48,9 @@ Return JSON with EXACTLY these keys:
   ]
 }
 
-Values in vec must be continuous numbers in [0,1] keyed Xi, T, R, E, M, V, S, A, F, phi_e, phi_c. Avoid pure 0 or 1. Aim for a total sum between 2.0 and 6.0. Respond with ONLY the JSON, no prose, no code fences.`;
+Values in vec must be continuous numbers in [0,1] keyed Xi, T, R, E, M, V, S, A, F, phi_e, phi_c. Avoid pure 0 or 1. Aim for a total sum between 2.0 and 6.0. Respond with ONLY the JSON, no prose, no code fences.${langLine(lang)}`;
 
-export const ISO_PROMPT = (a: string, b: string) => `You are the mathematical core of the 1+1=3 universal interpreter.
+export const ISO_PROMPT = (a: string, b: string, lang: string = "English") => `You are the mathematical core of the 1+1=3 universal interpreter.
 
 Project BOTH concepts into the 11-dimensional Σ space. Values in [0.0, 1.0].
 

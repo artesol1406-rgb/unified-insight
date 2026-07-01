@@ -266,6 +266,3 @@ export function RosettaPanel() {
   );
 }
 
-function descOf(d: string) {
-  return ({ 'Ξ':'pause','T':'tension','R':'relation','E':'expansion','M':'memory','V':'void','S':'system','A':'action','F':'focus','φe':'fractal exp','φc':'fractal contract' } as Record<string,string>)[d] || "";
-}

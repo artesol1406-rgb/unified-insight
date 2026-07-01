@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { analyzeConcept } from "@/lib/amalgam/amalgam.functions";
-import { DIMS, DOMAINS, normalize, toSignature, translate, makeSentence, hashString, type Vec } from "@/lib/amalgam/engine";
+import { DIMS, DOMAINS, normalize, toSignature, translate, makeSentence, hashString, domainName, dimDesc, type Vec } from "@/lib/amalgam/engine";
 import { SignatureChart } from "./SignatureChart";
 import { downloadReportPdf, dimReadout } from "@/lib/pdf-export";
+import { useLang, langName } from "@/lib/i18n";
 
-const EXAMPLES = ["Entropy", "Silence", "Revolution", "Love", "Forgiveness", "Memory", "Order", "Chaos"];
+const EXAMPLES_EN = ["Entropy", "Silence", "Revolution", "Love", "Forgiveness", "Memory", "Order", "Chaos"];
+const EXAMPLES_ES = ["Entropía", "Silencio", "Revolución", "Amor", "Perdón", "Memoria", "Orden", "Caos"];
 const PILL_COLORS = ["bg-accent-cyan text-black", "bg-accent-magenta text-black", "bg-accent-gold text-black"];
 
 type Polarity = { a: string; b: string; dim: string; note: string };
@@ -20,6 +22,8 @@ type ConceptResult = {
 
 export function RosettaPanel() {
   const fn = useServerFn(analyzeConcept);
+  const { lang, t } = useLang();
+  const EXAMPLES = lang === "es" ? EXAMPLES_ES : EXAMPLES_EN;
   const [concept, setConcept] = useState("");
   const [domain, setDomain] = useState("philosophy");
   const [loading, setLoading] = useState(false);
@@ -31,7 +35,7 @@ export function RosettaPanel() {
     if (!c || loading) return;
     setConcept(c); setLoading(true); setErr(null);
     try {
-      const r = await fn({ data: { concept: c, domain: DOMAINS[domain].name } });
+      const r = await fn({ data: { concept: c, domain: DOMAINS[domain].name, lang: langName(lang) } });
       if (!r) throw new Error("Empty response");
       setResult({
         vec: normalize(r.vec),
@@ -42,7 +46,7 @@ export function RosettaPanel() {
         domain,
       });
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Something went wrong.");
+      setErr(e instanceof Error ? e.message : t("Something went wrong.", "Algo salió mal."));
     } finally { setLoading(false); }
   };
 
@@ -53,10 +57,11 @@ export function RosettaPanel() {
         .filter(([k]) => k !== result.domain)
         .map(([k, d], i) => {
           const items = translate(result.vec, k);
+          const dName = domainName(k, d.name, lang);
           return {
             key: k,
-            domain: d,
-            sentence: makeSentence(items, d.name, result.concept, seed + i),
+            domain: { ...d, name: dName },
+            sentence: makeSentence(items, dName, result.concept, seed + i, lang),
             items,
           };
         })
